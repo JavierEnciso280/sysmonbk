@@ -1,0 +1,384 @@
+Reglas de sysmon
+<Sysmon schemaversion="4.81">
+  <EventFiltering>
+     <!-- Exclusiones iniciales-->
+    <RuleGroup name="ProcessCreate" groupRelation="or">
+     <ProcessCreate onmatch="exclude">
+     <!--  Excluciones de directorios para ProcessCreate -->
+      <CommandLine condition="is">pidof apache2 php8.1</CommandLine>
+      <CommandLine condition="contains">find /proc</CommandLine>
+     <CommandLine condition="is">/bin/sh -c [ -x /etc/init.d/anacron ] &amp;&amp; if [ ! -d /run/systemd/system ]; then /usr/sbin/invoke-rc.d anacron start &gt;/dev/null; fi</CommandLine>
+     <CommandLine condition="begin with">/usr/lib/snapd/snap-device-helper change snap_root</CommandLine>
+     <CommandLine condition="begin with">update-notifier</CommandLine>
+     </ProcessCreate>
+     <!-- -->
+     <!-- Event ID 1 == ProcessCreate. Log all newly created processes -->
+      <ProcessCreate onmatch="include">
+      <!-- Detectar actividad sospechosa relacionada con el uso de SSH, SCP, SFTP y ssh-keygen -->
+        <Rule name="TechniqueID=T1021.004,TechniqueName=Remote Services: SSH" groupRelation="and">
+          <Image condition="begin with">/usr/bin/(ssh|scp|sftp|ssh-keygen)</Image>
+          <CommandLine condition="contains">ConnectTimeout=</CommandLine>
+          <CommandLine condition="contains">BatchMode=yes</CommandLine>
+          <CommandLine condition="contains">StrictHostKeyChecking=no</CommandLine>
+          <CommandLine condition="contains any">wget;curl</CommandLine>
+          <CommandLine condition="contains any">-N;-D;-R;-L;-X;-o ProxyCommand=</CommandLine>
+        </Rule>
+        <!-- Detectar posibles intentos de ofuscación de archivos o información mediante técnicas de relleno binario -->
+        <Rule name="TechniqueID=T1027.001,TechniqueName=Obfuscated Files or Information: Binary Padding" groupRelation="and">
+          <Image condition="is any">
+            /bin/dd;/bin/cat;/bin/cp;/usr/bin/tr;/usr/bin/base64
+          </Image>
+          <CommandLine condition="contains">(?i)(?:\s*-\w+\s+)?(if=|of=|bs=)(?:\d+|0x[0-9a-fA-F]+)</CommandLine>
+        </Rule>
+        <!-- Detectar posibles intentos de recopilar información sobre usuarios del sistema, sus cuentas y actividad -->
+        <Rule name="TechniqueID=T1033,TechniqueName=System Owner/User Discovery" groupRelation="or">
+          <Image condition="is">(/usr/bin/id|/usr/bin/who|/usr/bin/w|/usr/bin/last|/usr/bin/lastlog|/usr/bin/finger/tracker-miner)</Image>
+          <Image condition="contains">whoami</Image>
+          <CommandLine condition="contains">(/var/run/utmp|/var/log/btmp|/var/log/wtmp)</CommandLine>
+        </Rule>
+        
+        <Rule name="TechniqueID=T1053.003,TechniqueName=Scheduled Task/Job: Cron" groupRelation="or">
+          <Image condition="is any">
+            /etc/cron.allow;/etc/cron.deny;/etc/crontab;/etc/cron.d/*;
+            /etc/cron.daily/;/etc/cron.hourly/;/etc/cron.monthly/*;
+            /etc/cron.weekly/;/var/spool/cron/crontabs/;
+            /etc/anacrontab;/etc/systemd/timers/*;
+          </Image>
+          
+        </Rule>
+        
+        <Rule name="TechniqueID=T1070.006,TechniqueName=Indicator Removal on Host: Timestomp" groupRelation="and">
+          <Image condition="is">/bin/(touch|date|setfattr|debugfs|attr|chattr)</Image>
+          <CommandLine condition="contains any">-r;--reference;-t;--time;-s;set_inode_field</CommandLine>
+        </Rule>
+        <Rule name="TechniqueID=T1087.001,TechniqueName=Account Discovery: Local Account" groupRelation="or">
+          <CommandLine condition="begin with">/etc/passwd</CommandLine>
+          <CommandLine condition="begin with">/etc/sudoers</CommandLine>
+          <CommandLine condition="begin with">/etc/group</CommandLine>
+          <CommandLine condition="begin with">/etc/crontab</CommandLine>
+          <CommandLine condition="begin with">/etc/rc.local</CommandLine>
+          <CommandLine condition="begin with">/etc/bash.bashrc</CommandLine>
+          <CommandLine condition="begin with">/etc/shadow</CommandLine>
+          <CommandLine condition="begin with">/root/.bashrc</CommandLine>  
+          <CommandLine condition="begin with">~/.bashrc</CommandLine>
+          <CommandLine condition="begin with">/root/.bash_history</CommandLine> 
+          <CommandLine condition="contains">~/.bash_history</CommandLine> 
+          <CommandLine condition="begin with">/root/.zsh_history</CommandLine> 
+          <CommandLine condition="contains">~/.zsh_history</CommandLine> 
+          <CommandLine condition="contains">~/etc/ssh/ssh_config</CommandLine> 
+          <CommandLine condition="contains">ssh_config</CommandLine>
+          <CommandLine condition="contains">passwd</CommandLine>
+          <CommandLine condition="contains">.bash_history</CommandLine>
+          <CommandLine condition="contains">.zsh_history</CommandLine>
+          <CommandLine condition="contains">group</CommandLine>
+          <CommandLine condition="contains">sudoers</CommandLine>
+          <CommandLine condition="contains">crontab</CommandLine>
+          <CommandLine condition="contains">rc.local</CommandLine>
+          <CommandLine condition="contains">.bashrc</CommandLine>
+          <CommandLine condition="contains">shadow</CommandLine>
+          
+        </Rule>
+        
+         <Rule name="TechniqueID=T1552.003,TechniqueName=Bash History" groupRelation="or">
+          <CommandLine condition="contains all">.bash_history;grep</CommandLine>
+        </Rule>
+        <Rule name="TechniqueID=T1552.003,TechniqueName=Zsh History" groupRelation="or">
+          <CommandLine condition="contains all">.zsh_history;grep</CommandLine>
+        </Rule>
+        <Rule name="TechniqueID=T1059.004,TechniqueName=Command and Scripting Interpreter: Unix Shell" groupRelation="or">
+          <Image condition="begin with">/bin/bash</Image>
+          <Image condition="begin with">/bin/dash</Image>
+          <Image condition="begin with">/bin/sh</Image>
+          
+          
+          
+        </Rule>
+        <Rule name="TechniqueID=T1105,TechniqueName=Ingress Tool Transfer" groupRelation="or">
+        <Image condition="contains any">
+          wget;curl;ftpget;tftp;lwp-download;wget2;aria2c;axel;fetch;powershell
+        </Image>
+        <CommandLine condition="contains any">
+          http://;https://;ftp://;
+          /tmp;/dev/shm;
+          .exe;.sh;.py;.bat;.ps1;
+        </CommandLine>
+        </Rule>
+        <Rule name="TechniqueID=T1123,TechniqueName=Audio Capture" groupRelation="and">
+          <Image condition="contains any">/bin/(aplay|arecord|sox|ffmpeg|paplay|parec|pulseaudio|alsamixer|audacity|wireshark)</Image>
+          <CommandLine condition="contains any">(aplay|arecord|sox|ffmpeg|paplay|parec|pulseaudio|alsamixer|audacity|wireshark|dumpcap|tcpdump)</CommandLine>
+        </Rule>
+        <Rule name="TechniqueID=T1136.001,TechniqueName=Create or Delete Account: Local Account" groupRelation="or">
+          <Image condition="contains">useradd</Image>
+          <Image condition="contains">adduser</Image>
+          <Image condition="contains">deluser</Image>
+          <Image condition="contains">userdel</Image>
+        </Rule>
+        <Rule name="TechniqueID=T1203,TechniqueName=Exploitation for Client Execution" groupRelation="and">
+          <LogonId condition="is">0</LogonId>
+          <CurrentDirectory condition="contains">/var/opt/microsoft/scx/tmp</CurrentDirectory>
+          <Image condition="contains">/bin/(ba|da|t)?sh</Image>
+          <Image condition="contains">libexec/</Image>
+          <Image condition="contains">python</Image>
+          <Image condition="contains">perl</Image>
+          <CommandLine condition="contains any">/bin/sh;udisksd;wget;curl;nc;libexec</CommandLine>
+          <ParentImage condition="is">(explorer.exe|iexplore.exe|chrome.exe|firefox.exe)</ParentImage>
+        </Rule>
+        <Rule name="TechniqueID=T1485,TechniqueName=Data Destruction" groupRelation="and">
+          <Image condition="is">/bin/(dd|shred|wipe|srm|scrub)</Image>
+          <CommandLine condition="contains any">dd;of=;if=;shred;wipe;srm;scrub</CommandLine>
+          <CommandLine condition="contains any">if=/dev/zero;if=/dev/null;of=/dev/null</CommandLine>
+        </Rule>
+        
+        <Rule name="TechniqueID=T1505.003,TechniqueName=Server Software Component: Web Shell" groupRelation="and">
+          <Image condition="contains any">
+              whoami;ifconfig;/usr/bin/ip;/bin/uname;
+              /bin/bash;/bin/sh;/bin/dash;/bin/zsh;/bin/ksh;/bin/tcsh;
+              perl;python;php;nc;mkfifo;tee;wget;curl;base64;/usr/bin/base64;
+              /bin/cat;/bin/grep;/bin/sed;/bin/awk
+          </Image>
+          <ParentImage condition="contains any">
+              httpd;lighttpd;nginx;apache2;node;dash;cgi-bin;php-cgi;python-cgi</ParentImage>
+          <CommandLine condition="contains any">
+              base64_decode;eval;system;exec;passthru;popen;proc_open;shell_exec;
+              chattr;chmod;chown;mknod;mkfifo;touch;echo;rm;mv;cp;ln
+          </CommandLine> 
+        </Rule>
+        <Rule name="TechniqueID=T1543.002,TechniqueName=Create or Modify System Process: Systemd Service" groupRelation="or">
+          <Image condition="begin with">systemd</Image>
+          <Image condition="contains">systemctl</Image>
+          <Image condition="contains">systemd-analyze</Image>
+          <CommandLine condition="contains any">enable;disable;start;stop;restart;reload;update;edit;new;list-unit-files;show;status;daemon-reload</CommandLine>
+        </Rule>
+        
+      </ProcessCreate>
+      <ProcessCreate onmatch="include" >
+        <Rule name="TechniqueID=T1548.001,TechniqueName=Abuse Elevation Control Mechanism: Setuid and Setgid" groupRelation="or">
+          <Image condition="end with">chmod</Image>
+          <Image condition="end with">chown</Image>
+          <Image condition="end with">chgrp</Image>
+          <Image condition="end with">fchmod</Image>
+          <Image condition="end with">fchmodat</Image>
+          <Image condition="end with">fchown</Image>
+          <Image condition="end with">fchownat</Image>
+          <Image condition="end with">fremovexattr</Image>
+          <Image condition="end with">fsetxattr</Image>
+          <Image condition="end with">lchown</Image>
+          <Image condition="end with">lremovexattr</Image>
+          <Image condition="end with">lsetxattr</Image>
+          <Image condition="end with">removexattr</Image>
+          <Image condition="end with">setuid</Image>
+          <Image condition="end with">setgid</Image>
+          <Image condition="end with">setreuid</Image>
+          <Image condition="end with">setregid</Image>
+          <CommandLine condition="contains any">
+            setuid;setgid;chmod;chown;chattr;getfacl;setfacl;
+            allow;deny;read;write;execute;append;truncate;
+            owner;other;
+            system;user;
+            nobody;root;
+          </CommandLine>
+        </Rule>
+      </ProcessCreate>
+    </RuleGroup>
+<!-- Monitoreo de Montajes  -->
+    <RuleGroup name="Monitoreo de Montajes" groupRelation="or">
+      <ProcessCreate onmatch="include">
+        <Rule name="Deteccion de Montajes">
+          <Image condition="is">mount</Image>
+          <Image condition="is">umount</Image>
+          <Image condition="is">mount.cifs</Image>
+          <Image condition="is">mountpoint</Image>
+          <Image condition="is">umount2</Image>
+          <CommandLine condition="is">mount</CommandLine>
+          <CommandLine condition="is">umount</CommandLine>
+          <CommandLine condition="is">fusermount3</CommandLine>
+          <CommandLine condition="is">fstab</CommandLine>
+          <CommandLine condition="is">dumpe2fs</CommandLine>
+        </Rule>
+      </ProcessCreate>
+    </RuleGroup>
+    <!--Monitoreo de /Prueba para la creaci[on y aliminaci[on de archivos    
+    <RuleGroup name="Monitoreo de Prueba" groupRelation="and">
+      <FileDelete onmatch="include">
+       <Rule name="Eliminacion de archivos en directorio Prueba - Samba" groupRelation="or">
+        <TargetFilename condition="contains">/prueba/</TargetFilename>
+        La imagen smbd es el que detecta cuando se elimina (en esta regla) un archivo en msg.lock 
+        <Image condition="contains">smbd</Image>
+       </Rule>
+      </FileDelete>
+      <FileCreate onmatch="include">
+       <Rule name="Creacion de archivos en directorio Prueba - Samba">
+         <TargetFilename condition="contains">/prueba/</TargetFilename>
+         <Image condition="contains">smbd</Image>
+       </Rule>
+      </FileCreate>
+      <ProcessCreate onmatch="include">
+      <Rule name="Creacion de procesos en directorio Prueba" groupRelation="or">
+        <CurrentDirectory condition="is">/prueba</CurrentDirectory>
+      </Rule>
+     </ProcessCreate>
+   </RuleGroup> --> 
+    
+     
+<!--Deteccion de Malware -->
+    <RuleGroup name="Monitoreo de Ransomware en /Home" groupRelation="and">
+      <ProcessCreate onmatch="include">
+        <Rule name="Monitoreo de Ransomware en /Home" groupRelation="or">
+         <CurrentDirectory condition="contains">/home/</CurrentDirectory>
+        </Rule>
+        <Rule name="Monitoreo de Ransomware en /Home" groupRelation="or">
+         <CommandLine condition="begin with">mv</CommandLine>
+         <CommandLine condition="begin with">rename</CommandLine>
+        </Rule>
+        <Rule name="Monitoreo de Ransomware en /Home" groupRelation="or">
+         <OriginalFileName condition="is not">.txt</OriginalFileName>
+         <OriginalFileName condition="is not">.xls</OriginalFileName>
+         <OriginalFileName condition="is not">.ppt</OriginalFileName>
+         <OriginalFileName condition="is not">.sh</OriginalFileName>
+         <OriginalFileName condition="is not">.deb</OriginalFileName>
+         <OriginalFileName condition="is not">.odt</OriginalFileName>
+        </Rule>
+      </ProcessCreate>
+      
+    </RuleGroup>
+    <!-- Monitoreo de ossec.conf, auditd.conf y config.xml -->
+    <RuleGroup name="Monitoreo de Archivos de configuracion" groupRelation="or">
+      <ProcessCreate onmatch="include">
+        <Rule name="Lectura del ossec.conf del agente de wazuh" groupRelation="and">
+         <CommandLine condition="contains">ossec.conf</CommandLine>
+         <CommandLine condition="contains any">cat;grep;more;tail;less</CommandLine>
+        </Rule>
+        <Rule name="Modificacion del ossec.conf del agente de wazuh" groupRelation="and">
+         <CommandLine condition="contains">ossec.conf</CommandLine>
+         <CommandLine condition="contains any">nano;vi;emacs;sed;awk</CommandLine>
+        </Rule>
+        <!-- Config de auditd -->
+        <Rule name="Lectura del audit.conf del agente de auditd" groupRelation="and">
+         <CommandLine condition="contains">auditd.conf</CommandLine>
+         <CommandLine condition="contains any">cat;grep;more;tail;less</CommandLine>
+        </Rule>
+        <Rule name="Modificacion del audit.conf del agente de auditd" groupRelation="and">
+         <CommandLine condition="contains">auditd.conf</CommandLine>
+         <CommandLine condition="contains any">nano;vi;emacs;sed;awk</CommandLine>
+        </Rule>
+        <!--  -->
+        <!-- Reglas de auditd -->
+        <Rule name="Lectura del audit.rules del agente de auditd" groupRelation="and">
+         <CommandLine condition="contains">audit.rules</CommandLine>
+         <CommandLine condition="contains any">cat;grep;more;tail;less</CommandLine>
+        </Rule>
+        <Rule name="Modificacion del audit.rules del agente de auditd" groupRelation="and">
+         <CommandLine condition="contains">audit.rules</CommandLine>
+         <CommandLine condition="contains any">nano;vi;emacs;sed;awk</CommandLine>
+        </Rule>
+        <!--  -->
+        <Rule name="Lectura del config.xml del agente de sysmon" groupRelation="and">
+         <CommandLine condition="contains">config.xml</CommandLine>
+         <CommandLine condition="contains any">cat;grep;more;tail;less</CommandLine>
+        </Rule>
+        <Rule name="Modificacion del config.xml del agente de sysmon" groupRelation="and">
+         <CommandLine condition="contains">config.xml</CommandLine>
+         <CommandLine condition="contains any">nano;vi;emacs;sed;awk</CommandLine>
+        </Rule>
+      </ProcessCreate>
+    </RuleGroup>
+    
+<!-- Event ID 3 == NetworkConnect Detected. Log all network connections -->
+      <RuleGroup name="NetworkConnect Detected" groupRelation="or">
+        <NetworkConnect onmatch="include">
+          <Rule name="TechniqueID=T1105,TechniqueName=Ingress Tool Transfer" groupRelation="or">
+            <Image condition="contains any">
+              wget;curl;ftpget;tftp;lwp-download;wget2;aria2c;axel;fetch;powershell
+            </Image>  
+            <Image condition="contains">nc</Image>
+            <Image condition="contains">scp</Image>
+            <Image condition="contains">ssh</Image>
+            <Image condition="contains">gdb</Image>
+            <Image condition="contains">perl</Image>
+            <!-- Custom: GitHub @djent- -->
+            <Image condition="contains">sftp</Image>
+            <Image condition="contains">scp</Image>
+            <Image condition="contains">rsync</Image> 
+          </Rule> 
+          <Rule name="TechniqueID=T1046,TechniqueName=Network Services Scanning" groupRelation="or">
+		  <Image condition="end with">/netcat</Image> <!-- Doesn't work -->
+		  <Image condition="end with">/nc</Image> <!-- Doesn't work -->
+		  <Image condition="end with">/ncat</Image> <!-- Custom - GitHub: @djent- -->
+		  <Image condition="end with">/telnet</Image> <!-- Doesn't work -->
+		  <Image condition="end with">/nmap</Image>
+         </Rule>
+        </NetworkConnect>		    
+      </RuleGroup>
+<!-- Event ID 5 == ProcessTerminate. Log all processes terminated -->
+      <RuleGroup name="ProcessTerminate" groupRelation="or">
+        <ProcessTerminate onmatch="include"/>
+      </RuleGroup>
+<!-- Event ID 9 == RawAccessRead. Log all raw access read -->
+      <RuleGroup name="RawAccessRead" groupRelation="or">
+        <RawAccessRead onmatch="include">
+         
+        </RawAccessRead>
+      </RuleGroup>
+<!-- Event ID 10 == ProcessAccess. Log all open process operations -->
+      <RuleGroup name="ProcessAccess" groupRelation="or">
+        <ProcessAccess onmatch="include"/>
+         
+      </RuleGroup>
+<!-- Event ID 11 == FileCreate. Log every file creation -->
+      <RuleGroup name="FileCreate" groupRelation="or">
+        <FileCreate onmatch="include">
+          <Rule name="TechniqueID=T1037,TechniqueName=Boot or Logon Initialization Scripts" groupRelation="or">
+            <TargetFilename condition="begin with">/etc/init/</TargetFilename>
+            <TargetFilename condition="begin with">/etc/init.d/</TargetFilename>
+            <TargetFilename condition="begin with">/etc/rc.d/</TargetFilename>
+            <TargetFilename condition="begin with">/etc/systemd/system/</TargetFilename>
+            <TargetFilename condition="begin with">/etc/crontab</TargetFilename>
+            <TargetFilename condition="begin with">/var/spool/cron/</TargetFilename>
+            <TargetFilename condition="begin with">~/.bashrc</TargetFilename>
+            <TargetFilename condition="begin with">~/.zshrc</TargetFilename>
+          </Rule>
+          <Rule name="TechniqueID=T1053.003,TechniqueName=Scheduled Task/Job: Cron" groupRelation="or">
+            <Image condition="is any">
+                /etc/cron.allow;/etc/cron.deny;/etc/crontab;/etc/cron.d/*;
+                /etc/cron.daily/;/etc/cron.hourly/;/etc/cron.monthly/*;
+                /etc/cron.weekly/;/var/spool/cron/crontabs/;
+                /etc/anacrontab;/etc/systemd/timers/*;
+            </Image>
+          </Rule>
+          <Rule name="TechniqueID=T1543.002,TechniqueName=Create or Modify System Process: Systemd Service" groupRelation="or">
+            <TargetFilename condition="begin with">/etc/systemd/system</TargetFilename>
+            <TargetFilename condition="begin with">/usr/lib/systemd/system</TargetFilename>
+            <TargetFilename condition="begin with">/run/systemd/system/</TargetFilename>
+            <TargetFilename condition="contains">/systemd/user/</TargetFilename>
+            
+          </Rule>
+          <Rule name="TechniqueID=T1105,TechniqueName=Ingress Tool Transfer" groupRelation="or">
+            <Image condition="contains any">
+                  wget;curl;ftpget;tftp;lwp-download;wget2;aria2c;axel;fetch;powershell
+            </Image>
+          </Rule>
+        </FileCreate>
+      </RuleGroup>
+<!-- Monitoreo del archivo authorized_keys -->
+      <RuleGroup name="Monitoreo de modificacion de archivos importantes" groupRelation="or">
+        <FileCreate onmatch="include">
+          <Rule name="Creación de archivos systemd y directorios específicos">
+            <TargetFilename condition="is">/home/vmadubuntu/.ssh</TargetFilename>
+	    <TargetFilename condition="begin with">/home/vmadubuntu/.ssh/authorized_keys</TargetFilename>
+	    
+          </Rule>
+        </FileCreate>
+        <ProcessCreate onmatch="include">
+          <Rule name="Cambios potencialmente peligrosos en authorized_keys">
+	    <CurrentDirectory condition="is">/home/vmadubuntu/.ssh/authorized_keys</CurrentDirectory>
+          </Rule>
+        </ProcessCreate>
+     </RuleGroup>
+    
+    <!-- Event ID 23 == FileDelete. Log all files being deleted -->
+    <RuleGroup name="FileDelete" groupRelation="or">
+      <FileDelete onmatch="include">
+      </FileDelete>
+    </RuleGroup>
+    </EventFiltering>  
+</Sysmon>

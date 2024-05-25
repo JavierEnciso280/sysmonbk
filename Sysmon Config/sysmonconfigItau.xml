@@ -1,0 +1,626 @@
+<!--  Data=28/06/2023  -->
+<Sysmon schemaversion="4.50">
+<HashAlgorithms>*</HashAlgorithms>
+<EventFiltering>
+<!-- > EventID 1 - ProcessCreate< -->
+<RuleGroup name="" groupRelation="or">
+<ProcessCreate onmatch="include">
+<!--  Windows Native  -->
+<Image condition="end with">bitsadmin.exe</Image>
+<Image condition="end with">cmd.exe</Image>
+<Image condition="end with">attrib</Image>
+<Image condition="end with">cscript.exe</Image>
+<Image condition="end with">mmc.exe</Image>
+<Image condition="end with">nc.exe</Image>
+<Image condition="end with">ncat.exe</Image>
+<Image condition="end with">net.exe</Image>
+<Image condition="end with">net1.exe</Image>
+<Image condition="end with">nmap.exe</Image>
+<Image condition="end with">notepad.exe</Image>
+<Image condition="end with">powershell.exe</Image>
+<Image condition="end with">ps.exec.exe</Image>
+<Image condition="end with">ps.exesvc.exe</Image>
+<Image condition="end with">reg.exe</Image>
+<Image condition="end with">regsvr32.exe</Image>
+<Image condition="end with">rundll32.exe</Image>
+<Image condition="end with">sc.exe</Image>
+<Image condition="end with">wmic.exe</Image>
+<Image condition="end with">sdbinst.exe</Image>
+<Image condition="end with">advanced_ip_scanner.exe</Image>
+<Image condition="end with">nltest.exe</Image>
+<Image condition="end with">AdFind.exe</Image>
+<Image condition="end with">sdbinst.exe</Image>
+<Image condition="end with">wce.exe</Image>
+<Image condition="end with">w3wp.exe</Image>
+<Image condition="contains">certutil.exe</Image>
+<Image condition="end with">ntdsutil.exe</Image>
+<ParentImage condition="end with">ntdsutil.exe</ParentImage>
+<ParentImage condition="end with">winlogon.exe</ParentImage>
+<ParentImage condition="end with">bitsadmin.exe</ParentImage>
+<ParentImage condition="end with">cmd.exe</ParentImage>
+<ParentImage condition="end with">cscript.exe</ParentImage>
+<ParentImage condition="end with">mmc.exe</ParentImage>
+<ParentImage condition="end with">nc.exe</ParentImage>
+<ParentImage condition="end with">ncat.exe</ParentImage>
+<ParentImage condition="end with">net.exe</ParentImage>
+<ParentImage condition="end with">net1.exe</ParentImage>
+<ParentImage condition="end with">nmap.exe</ParentImage>
+<ParentImage condition="end with">notepad.exe</ParentImage>
+<ParentImage condition="end with">powershell.exe</ParentImage>
+<ParentImage condition="end with">psexec.exe</ParentImage>
+<ParentImage condition="end with">psexesvc.exe</ParentImage>
+<ParentImage condition="end with">reg.exe</ParentImage>
+<ParentImage condition="end with">regsvr32.exe</ParentImage>
+<ParentImage condition="end with">rundll32.exe</ParentImage>
+<ParentImage condition="end with">sc.exe</ParentImage>
+<ParentImage condition="end with">wmic.exe</ParentImage>
+<ParentImage condition="end with">sdbinst.exe</ParentImage>
+<ParentImage condition="end with">advanced_ip_scanner.exe</ParentImage>
+<ParentImage condition="end with">nltest.exe</ParentImage>
+<ParentImage condition="end with">AdFind.exe</ParentImage>
+<ParentImage condition="end with">sdbinst.exe</ParentImage>
+<ParentImage condition="end with">wce.exe</ParentImage>
+<ParentImage condition="end with">w3wp.exe</ParentImage>
+<ParentImage condition="contains">certutil.exe</ParentImage>
+<ParentImage condition="contains">explorer.exe</ParentImage>
+<CommandLine condition="contains">/domain_trusts</CommandLine>
+<CommandLine condition="contains">certutil.exe</CommandLine>
+<CommandLine condition="contains">-decode</CommandLine>
+<CommandLine condition="contains">echo%RANDOM%</CommandLine>
+<CommandLine condition="contains">/dclist</CommandLine>
+<CommandLine condition="contains">/dsgetdc</CommandLine>
+<CommandLine condition="contains">/parentdomain</CommandLine>
+<CommandLine condition="contains">objectcategory=computer</CommandLine>
+<CommandLine condition="contains">objectcategory=person</CommandLine>
+<CommandLine condition="contains">objectcategory=subnet</CommandLine>
+<CommandLine condition="contains">objectcategory=group</CommandLine>
+<CommandLine condition="contains">objectcategory=organizationalunit</CommandLine>
+<CommandLine condition="contains">domainlist</CommandLine>
+<CommandLine condition="contains">dcmodes</CommandLine>
+<CommandLine condition="contains">adinfo</CommandLine>
+<CommandLine condition="contains">dclist</CommandLine>
+<CommandLine condition="contains">ntdsutil.exe</CommandLine>
+<CommandLine condition="contains">computers_pwnotreqd</CommandLine>
+<CommandLine condition="contains">trustdmp</CommandLine>
+<CommandLine condition="contains">CurrentControlSet\Control\Session Manager</CommandLine>
+<CommandLine condition="contains">SYSTEM\CurrentControlSet\Control\Session Manager</CommandLine>
+<CommandLine condition="contains">SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags</CommandLine>
+<CommandLine condition="contains">sekurlsa</CommandLine>
+<CommandLine condition="contains">Mimikatz</CommandLine>
+<CommandLine condition="contains">IziCall</CommandLine>
+<Rule name="" groupRelation="and">
+<CommandLine condition="contains">Procdump</CommandLine>
+<CommandLine condition="contains">lsass</CommandLine>
+</Rule>
+<CommandLine condition="contains">MiniWriteDump</CommandLine>
+<CommandLine condition="contains">Pysecdump</CommandLine>
+<CommandLine condition="contains">PwDumpX</CommandLine>
+<CommandLine condition="contains">gsecdump</CommandLine>
+<CommandLine condition="contains">CrackMapExec</CommandLine>
+<CommandLine condition="contains">sekurlsa</CommandLine>
+<CommandLine condition="contains">wceexe</CommandLine>
+<CommandLine condition="contains">CrackMapExec</CommandLine>
+<CommandLine condition="contains">minidumplsass</CommandLine>
+<Rule name="" groupRelation="and">
+<Image condition="contains">rundll32</Image>
+<CommandLine condition="contains">/section:httplogging</CommandLine>
+<CommandLine condition="contains">MiniDump</CommandLine>
+</Rule>
+<Rule name="" groupRelation="and">
+<Image condition="contains">appcmd.exe</Image>
+<CommandLine condition="contains">comsvcsdll</CommandLine>
+<CommandLine condition="contains">/dontLog:true</CommandLine>
+<CommandLine condition="contains">/dontLog:true</CommandLine>
+</Rule>
+<Rule name="" groupRelation="and">
+<Image condition="contains">sethc</Image>
+<ParentImage condition="contains">winlogon.exe</ParentImage>
+<OriginalFileName condition="contains">cmd.exe</OriginalFileName>
+</Rule>
+<Rule name="" groupRelation="and">
+<Image condition="contains">utilman.exe</Image>
+<ParentImage condition="contains">winlogon.exe</ParentImage>
+<OriginalFileName condition="contains">cmd.exe</OriginalFileName>
+</Rule>
+<Rule name="" groupRelation="and">
+<Image condition="contains">osk.exe</Image>
+<ParentImage condition="contains">winlogon.exe</ParentImage>
+<OriginalFileName condition="contains">cmd.exe</OriginalFileName>
+</Rule>
+<Rule name="" groupRelation="and">
+<Image condition="contains">magnify.exe</Image>
+<ParentImage condition="contains">winlogon.exe</ParentImage>
+<OriginalFileName condition="contains">cmd.exe</OriginalFileName>
+</Rule>
+<!--  Regulatório  -->
+<Image condition="contains">rundll32.exe</Image>
+<Image condition="contains">MSBuild.exe</Image>
+<!--  Fim  -->
+</ProcessCreate>
+</RuleGroup>
+<RuleGroup name="" groupRelation="or">
+<ProcessCreate onmatch="exclude">
+<ParentImage condition="begin with">C:\Program Files (x86)\Adobe\Acrobat Reader DC\</ParentImage>
+<ParentImage condition="begin with">C:\Program Files\Adobe\Acrobat Reader DC\</ParentImage>
+<Image condition="begin with">C:\Program Files\Adobe\Acrobat Reader DC\</Image>
+<Image condition="begin with">C:\Program Files (x86)\Adobe\Acrobat Reader DC\</Image>
+</ProcessCreate>
+</RuleGroup>
+<!--  EventID 2 - FileCreateTime  -->
+<RuleGroup name="" groupRelation="or">
+<FileCreateTime onmatch="include"/>
+</RuleGroup>
+<!--  EventID 3 - NetworkConnect  -->
+<RuleGroup name="" groupRelation="or">
+<NetworkConnect onmatch="include">
+<Image condition="contains">bitsadmin.exe</Image>
+<Image condition="contains">cmd.exe</Image>
+<Image condition="contains">nc.exe</Image>
+<Image condition="contains">ncat.exe</Image>
+<Image condition="contains">net.exe</Image>
+<Image condition="contains">net1.exe</Image>
+<Image condition="contains">powershell.exe</Image>
+<Image condition="contains">psexec</Image>
+<Image condition="contains">wmic.exe</Image>
+<Image condition="contains">wsmprovhost.exe</Image>
+<Image condition="contains">explorer.exe</Image>
+<Image condition="contains">.msc</Image>
+<Image condition="contains">.cpl</Image>
+<!--  SERVIÇOS  -->
+<DestinationPort condition="is">22</DestinationPort>
+<!--  SSH  -->
+<DestinationPort condition="is">4098</DestinationPort>
+<!--  SSH  -->
+<DestinationPort condition="is">3389</DestinationPort>
+<!--  RDP  -->
+<Image condition="contains">:\$Recycle.bin</Image>
+<Image condition="contains">:\temp</Image>
+<Image condition="contains">:\users\default</Image>
+<Image condition="contains">:\users\public</Image>
+<Image condition="contains">:\windows\temp</Image>
+<Image condition="contains">bitsadmin.exe</Image>
+<Image condition="contains">cmd.exe</Image>
+<Image condition="contains">cscript.exe</Image>
+<Image condition="contains">mmc.exe</Image>
+<Image condition="contains">nc.exe</Image>
+<Image condition="contains">ncat.exe</Image>
+<Image condition="contains">net.exe</Image>
+<Image condition="contains">net1.exe</Image>
+<Image condition="contains">nmap.exe</Image>
+<Image condition="contains">notepad.exe</Image>
+<Image condition="contains">powershell.exe</Image>
+<Image condition="contains">psexec.exe</Image>
+<Image condition="contains">psexesvc.exe</Image>
+<Image condition="contains">reg.exe</Image>
+<Image condition="contains">regsvr32.exe</Image>
+<Image condition="contains">rundll32.exe</Image>
+<Image condition="contains">sc.exe</Image>
+<Image condition="contains">wmic.exe</Image>
+<DestinationPort condition="contains">135</DestinationPort>
+<DestinationPort condition="contains">143</DestinationPort>
+<DestinationPort condition="contains">1723</DestinationPort>
+<DestinationPort condition="contains">22</DestinationPort>
+<DestinationPort condition="contains">23</DestinationPort>
+<DestinationPort condition="contains">25</DestinationPort>
+<DestinationPort condition="contains">2701</DestinationPort>
+<DestinationPort condition="contains">3389</DestinationPort>
+<DestinationPort condition="contains">443</DestinationPort>
+<DestinationPort condition="contains">444</DestinationPort>
+<DestinationPort condition="contains">4500</DestinationPort>
+<DestinationPort condition="contains">53</DestinationPort>
+<DestinationPort condition="contains">5800</DestinationPort>
+<DestinationPort condition="contains">5900</DestinationPort>
+<DestinationPort condition="contains">5985</DestinationPort>
+<DestinationPort condition="contains">80</DestinationPort>
+<DestinationPort condition="contains">9001</DestinationPort>
+<DestinationPort condition="contains">9030</DestinationPort>
+<SourcePort condition="contains">135</SourcePort>
+<SourcePort condition="contains">143</SourcePort>
+<SourcePort condition="contains">1723</SourcePort>
+<SourcePort condition="contains">22</SourcePort>
+<SourcePort condition="contains">23</SourcePort>
+<SourcePort condition="contains">25</SourcePort>
+<SourcePort condition="contains">2701</SourcePort>
+<SourcePort condition="contains">3389</SourcePort>
+<SourcePort condition="contains">443</SourcePort>
+<SourcePort condition="contains">444</SourcePort>
+<SourcePort condition="contains">4500</SourcePort>
+<SourcePort condition="contains">53</SourcePort>
+<SourcePort condition="contains">5800</SourcePort>
+<SourcePort condition="contains">5900</SourcePort>
+<SourcePort condition="contains">5985</SourcePort>
+<SourcePort condition="contains">80</SourcePort>
+<SourcePort condition="contains">9001</SourcePort>
+<SourcePort condition="contains">9030</SourcePort>
+</NetworkConnect>
+</RuleGroup>
+<RuleGroup name="" groupRelation="or">
+<NetworkConnect onmatch="exclude">
+<Rule name="" groupRelation="And">
+<Image condition="contains">:\Users\</Image>
+<Image condition="contains">\AppData\Local\Apps\2.0\</Image>
+<Image condition="contains">\One</Image>
+<Image condition="end with">.exe</Image>
+</Rule>
+<Rule name="" groupRelation="And">
+<DestinationPort condition="is any">53;80;443</DestinationPort>
+<DestinationIp condition="begin with">10.</DestinationIp>
+</Rule>
+<Rule name="" groupRelation="And">
+<DestinationPort condition="contains any">53;80;443</DestinationPort>
+<DestinationIp condition="begin with">172.16.</DestinationIp>
+</Rule>
+<Rule name="" groupRelation="And">
+<DestinationPort condition="contains any">53;80;443</DestinationPort>
+<DestinationIp condition="begin with">172.17</DestinationIp>
+</Rule>
+<Rule name="" groupRelation="And">
+<DestinationPort condition="contains any">53;80;443</DestinationPort>
+<DestinationIp condition="begin with">172.18.</DestinationIp>
+</Rule>
+<Rule name="" groupRelation="And">
+<DestinationPort condition="contains any">53;80;443</DestinationPort>
+<DestinationIp condition="begin with">172.19.</DestinationIp>
+</Rule>
+<Rule name="" groupRelation="And">
+<DestinationPort condition="contains any">53;80;443</DestinationPort>
+<DestinationIp condition="begin with">172.20.</DestinationIp>
+</Rule>
+<Rule name="" groupRelation="And">
+<DestinationPort condition="contains any">53;80;443</DestinationPort>
+<DestinationIp condition="begin with">172.21.</DestinationIp>
+</Rule>
+<Rule name="" groupRelation="And">
+<DestinationPort condition="contains any">53;80;443</DestinationPort>
+<DestinationIp condition="begin with">172.22.</DestinationIp>
+</Rule>
+<Rule name="" groupRelation="And">
+<DestinationPort condition="contains any">53;80;443</DestinationPort>
+<DestinationIp condition="begin with">172.23.</DestinationIp>
+</Rule>
+<Rule name="" groupRelation="And">
+<DestinationPort condition="contains any">53;80;443</DestinationPort>
+<DestinationIp condition="begin with">172.24.</DestinationIp>
+</Rule>
+<Rule name="" groupRelation="And">
+<DestinationPort condition="contains any">53;80;443</DestinationPort>
+<DestinationIp condition="begin with">172.25.</DestinationIp>
+</Rule>
+<Rule name="" groupRelation="And">
+<DestinationPort condition="contains any">53;80;443</DestinationPort>
+<DestinationIp condition="begin with">172.26.</DestinationIp>
+</Rule>
+<Rule name="" groupRelation="And">
+<DestinationPort condition="contains any">53;80;443</DestinationPort>
+<DestinationIp condition="begin with">172.27.</DestinationIp>
+</Rule>
+<Rule name="" groupRelation="And">
+<DestinationPort condition="contains any">53;80;443</DestinationPort>
+<DestinationIp condition="begin with">172.28.</DestinationIp>
+</Rule>
+<Rule name="" groupRelation="And">
+<DestinationPort condition="contains any">53;80;443</DestinationPort>
+<DestinationIp condition="begin with">172.29.</DestinationIp>
+</Rule>
+<Rule name="" groupRelation="And">
+<DestinationPort condition="contains any">53;80;443</DestinationPort>
+<DestinationIp condition="begin with">172.30.</DestinationIp>
+</Rule>
+<Rule name="" groupRelation="And">
+<DestinationPort condition="contains any">53;80;443</DestinationPort>
+<DestinationIp condition="begin with">172.31.</DestinationIp>
+</Rule>
+<Rule name="" groupRelation="And">
+<DestinationPort condition="contains any">53;80;443</DestinationPort>
+<DestinationIp condition="begin with">172.32.</DestinationIp>
+</Rule>
+<Rule name="" groupRelation="And">
+<DestinationPort condition="contains any">53;80;443</DestinationPort>
+<DestinationIp condition="begin with">192.168.</DestinationIp>
+</Rule>
+<Rule name="" groupRelation="And">
+<Image condition="is">C:\Windows\System32\WindowsPowerShell\*\powershell.exe</Image>
+<DestinationPort condition="contains any">389;636</DestinationPort>
+</Rule>
+<Rule name="" groupRelation="And">
+<DestinationIp condition="contains">10.225.</DestinationIp>
+<DestinationPort condition="is">53</DestinationPort>
+</Rule>
+<Rule name="" groupRelation="And">
+<DestinationIp condition="contains">10.</DestinationIp>
+<DestinationPort condition="is">53</DestinationPort>
+</Rule>
+<Rule name="" groupRelation="And">
+<DestinationIp condition="contains">10.</DestinationIp>
+<DestinationPort condition="is">53</DestinationPort>
+<Image condition="contains">:\Program Files (x86)\Avaya\Avaya one-X Agent\</Image>
+<Image condition="contains">:\Program Files (x86)\Pelco\Endura\WS5000\Endura.exe</Image>
+<Image condition="contains">:\Program Files (x86)\Scati\ScatiWatcher\SurferWatcher.exe</Image>
+<Image condition="contains">:\Program Files\Pelco\Endura\WS5000\Endura.exe</Image>
+<Image condition="contains">:\Program Files\Scati\ScatiWatcher\SurferWatcher.exe</Image>
+</Rule>
+<Rule name="" groupRelation="And">
+<Image condition="contains">:\Users\Public\PelcoUtilities</Image>
+<Image condition="end with">Utilities.exe</Image>
+<Image condition="contains">:\Program Files (x86)\Cisco\Cisco AnyConnect Secure Mobility Client\</Image>
+<Image condition="contains">:\Program Files\Cylance\Desktop\CylanceSvc.exe</Image>
+<Image condition="contains">:\Program Files\Cylance\Optics\CyOptics.exe</Image>
+<Image condition="contains">:\Program Files (x86)\Intel\Intel(R) Management Engine Components\LMS\LMS.exe</Image>
+<Image condition="contains">:\Program Files\Intel\Intel(R) Management Engine Components\iCLS\TPMProvisioningService.exe</Image>
+</Rule>
+<Rule name="" groupRelation="And">
+<DestinationIp condition="is">0:0:0:0:0:0:0:1</DestinationIp>
+<SourceIp condition="is">0:0:0:0:0:0:0:1</SourceIp>
+<Image condition="contains">:\Program Files (x86)\Manufacturer\Endpoint Agent\edpa.exe</Image>
+<Image condition="contains">:\Program Files (x86)\Microsoft OneDrive\OneDrive.exe</Image>
+<Image condition="contains">:\Program Files\Microsoft OneDrive\OneDrive.exe</Image>
+<Image condition="end with">\AppData\Local\Microsoft\OneDrive\OneDrive.exe</Image>
+<Image condition="end with">\AppData\Local\Microsoft\OneDrive\OneDriveStandaloneUpdater.exe</Image>
+<Image condition="end with">\AppData\Local\Microsoft\Teams\current\Teams.exe</Image>
+</Rule>
+<Rule name="" groupRelation="And">
+<Image condition="contains">:\ProgramData\</Image>
+<Image condition="end with">\Microsoft\Teams\current\Teams.exe</Image>
+<DestinationHostname condition="is">mail.mailer.com.br</DestinationHostname>
+<DestinationIp condition="is">10.58.34.42</DestinationIp>
+<Image condition="is">C:\Program Files\Microsoft Office\Office16\OUTLOOK.EXE</Image>
+<SourceHostname condition="is">mail.mailer.com.br</SourceHostname>
+<SourceIp condition="is">10.58.34.42</SourceIp>
+<Image condition="contains">:\Program Files (x86)\Microsoft Visual Studio\</Image>
+<Image condition="contains">:\Program Files\Common Files\microsoft shared\ClickToRun\OfficeC2RClient.exe</Image>
+<Image condition="contains">:\Program Files\Common Files\microsoft shared\ClickToRun\OfficeClickToRun.exe</Image>
+<Image condition="contains">:\Program Files\Microsoft Office\root\Office16\</Image>
+<Image condition="contains">:\ProgramData\Microsoft\Windows Defender\Platform\</Image>
+<Image condition="contains">:\Windows\CCM\CcmExec.exe</Image>
+<Image condition="contains">:\Windows\System32\SearchProtocolHost.exe</Image>
+<Image condition="contains">:\Windows\System32\appidcertstorecheck.exe</Image>
+<Image condition="contains">:\Windows\System32\dsregcmd.exe</Image>
+<Image condition="contains">:\Windows\System32\lsass.exe</Image>
+<Image condition="contains">:\Program Files\NDDigital\nddPrint\Agent\nddPrint.Agent.Listener.Service.exe</Image>
+</Rule>
+<Rule name="" groupRelation="And">
+<Image condition="contains">:\Windows\System32\spoolsv.exe</Image>
+<DestinationPort condition="is">161</DestinationPort>
+</Rule>
+<Rule name="" groupRelation="And">
+<Image condition="contains">:\Windows\System32\spoolsv.exe</Image>
+<SourcePort condition="is">161</SourcePort>
+</Rule>
+<Image condition="contains">:\EAWIN\</Image>
+<Image condition="contains">:\Program Files\SplunkUniversalForwarder\</Image>
+<Image condition="contains">:\Program Files\Splunk\</Image>
+<Image condition="contains">:\Program Files (x86)\Symantec\Symantec Endpoint Protection\</Image>
+<DestinationHostname condition="end with">.itau-unibanco</DestinationHostname>
+<DestinationHostname condition="end with">.itau.com.br</DestinationHostname>
+<DestinationHostname condition="end with">.itau.*</DestinationHostname>
+<DestinationHostname condition="end with">.itau</DestinationHostname>
+<DestinationHostname condition="end with">.live.com</DestinationHostname>
+<DestinationHostname condition="end with">.microsoft.com</DestinationHostname>
+<DestinationHostname condition="end with">.office.com</DestinationHostname>
+<DestinationHostname condition="end with">.office365.com</DestinationHostname>
+<DestinationHostname condition="end with">.sharepoint.com</DestinationHostname>
+<DestinationHostname condition="end with">.skype.com</DestinationHostname>
+<DestinationHostname condition="end with">.windows.net</DestinationHostname>
+<DestinationHostname condition="end with">.windowsupdate.com</DestinationHostname>
+<DestinationHostname condition="end with">microsoft.com.akadns.net</DestinationHostname>
+<DestinationHostname condition="end with">microsoft.com.nsatc.net</DestinationHostname>
+<DestinationIp condition="contains any">10.50.12.33;10.50.12.9;</DestinationIp>
+<SourceIp condition="contains any">10.50.12.33;10.50.12.9;</SourceIp>
+<DestinationIp condition="begin with">224.</DestinationIp>
+<SourceIp condition="begin with">224.</SourceIp>
+<DestinationIp condition="is">10.48.33.60</DestinationIp>
+<SourceIp condition="is">10.48.33.60</SourceIp>
+<SourceIp condition="is">10.58.33.91</SourceIp>
+<DestinationIp condition="is">172.20.200.66</DestinationIp>
+<DestinationIp condition="begin with">fe80:0:0:0</DestinationIp>
+<DestinationIp condition="is">127.0.0.1</DestinationIp>
+<DestinationPort condition="contains">1900</DestinationPort>
+<SourcePort condition="contains">1900</SourcePort>
+<DestinationPort condition="contains">5353</DestinationPort>
+<SourcePort condition="contains">5353</SourcePort>
+<Image condition="contains">Program Files\Siganet\siganet.exe</Image>
+<DestinationPort condition="is">80</DestinationPort>
+<!--  SSH  -->
+<DestinationPort condition="is">443</DestinationPort>
+<!--  SSH  -->
+</NetworkConnect>
+</RuleGroup>
+<!--  EventID 5 - ProcessTerminate  -->
+<RuleGroup name="" groupRelation="or">
+<ProcessTerminate onmatch="include"/>
+</RuleGroup>
+<!--  EventID 6 - DriverLoad  -->
+<RuleGroup name="" groupRelation="or">
+<DriverLoad onmatch="include"/>
+</RuleGroup>
+<!--  EventID 7 - ImageLoad  -->
+<RuleGroup name="" groupRelation="or">
+<ImageLoad onmatch="include">
+<ImageLoaded condition="end with">system*management*automationni.dll</ImageLoaded>
+<ImageLoaded condition="end with">system*management*automation.dll</ImageLoaded>
+<Rule groupRelation="and">
+<ImageLoaded condition="end with">DWritedll</ImageLoaded>
+<ImageLoaded condition="end with">WindowsCodecsdll</ImageLoaded>
+<SignatureStatus condition="is">Unavailable</SignatureStatus>
+</Rule>
+</ImageLoad>
+</RuleGroup>
+<!--  EventID 8 - CreateRemoteThread  -->
+<RuleGroup name="" groupRelation="or">
+<CreateRemoteThread onmatch="include"/>
+</RuleGroup>
+<!--  EventID 9 - RawAccessRead  -->
+<RuleGroup name="" groupRelation="or">
+<RawAccessRead onmatch="include"/>
+</RuleGroup>
+<!--  EventID 10 - ProcessAccess  -->
+<RuleGroup name="" groupRelation="or">
+<ProcessAccess onmatch="include"/>
+</RuleGroup>
+<!--  EventID 11 - FileCreate  -->
+<RuleGroup name="" groupRelation="or">
+<FileCreate onmatch="include">
+<Image condition="end with">bitsadmin.exe</Image>
+<Image condition="end with">cmd.exe</Image>
+<Image condition="end with">cscript.exe</Image>
+<Image condition="end with">mmc.exe</Image>
+<Image condition="end with">nc.exe</Image>
+<Image condition="end with">ncat.exe</Image>
+<Image condition="end with">net.exe</Image>
+<Image condition="end with">net1.exe</Image>
+<Image condition="end with">nmap.exe</Image>
+<Image condition="end with">notepad.exe</Image>
+<Image condition="end with">powershell.exe</Image>
+<Image condition="end with">ps.exec.exe</Image>
+<Image condition="end with">ps.exesvc.exe</Image>
+<Image condition="end with">reg.exe</Image>
+<Image condition="end with">regsvr32.exe</Image>
+<Image condition="end with">rundll32.exe</Image>
+<Image condition="end with">sc.exe</Image>
+<Image condition="end with">wmic.exe</Image>
+<Image condition="end with">nltest.exe</Image>
+<Image condition="end with">AdFind.exe</Image>
+<Image condition="end with">sdbinst.exe</Image>
+<Image condition="end with">sekurlsa</Image>
+<Image condition="end with">wce.exe</Image>
+<Image condition="contains">attrib</Image>
+<TargetFilename condition="contains">\Users\AppData\Local\ico</TargetFilename>
+</FileCreate>
+</RuleGroup>
+<RuleGroup name="" groupRelation="or">
+<FileCreate onmatch="exclude">
+<TargetFilename condition="contains">PowerShell\StartupProfileData-NonInteractive</TargetFilename>
+<Image condition="begin with">C:\Program Files\Symantec\</Image>
+<Image condition="begin with">C:\Program Files (x86)\Symantec\</Image>
+<Image condition="contains">3d8bbwe\Todo.exe</Image>
+<Image condition="end with">kvoop.exe</Image>
+<Image condition="contains">C:\Program FIles\Rapid7\</Image>
+<Image condition="begin with">C:\Program Files\SplunkUniversalForwarder\</Image>
+<TargetFilename condition="is">C:\Windows\System32\sru\SRUtmp.log</TargetFilename>
+<TargetFilename condition="begin with">C:\Program Files\SplunkUniversalForwarder\</TargetFilename>
+</FileCreate>
+</RuleGroup>
+<!--  EventID 12, 13, 14 - RegistryEvent  -->
+<RuleGroup name="" groupRelation="or">
+<RegistryEvent onmatch="include">
+<TargetObject condition="begin with">HKLM\SYSTEM\CurrentControlSet\Control\Lsa</TargetObject>
+<TargetObject condition="begin with">HKLM\SYSTEM\CurrentControlSet\Control\Lsa\OSConfig</TargetObject>
+<TargetObject condition="begin with">CurrentControlSet\Control\Lsa\Notification Packages</TargetObject>
+<TargetObject condition="begin with">HKLM\Software\WOW6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32</TargetObject>
+<TargetObject condition="begin with">HKLM\Software\WOW6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32</TargetObject>
+<TargetObject condition="contains">HKLM\CurrentControlSet\Control\Session Manager</TargetObject>
+<TargetObject condition="contains">Control\Session Manager\AppCertDlls</TargetObject>
+<TargetObject condition="contains">HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags</TargetObject>
+<TargetObject condition="contains">CurrentVersion\Run</TargetObject>
+<TargetObject condition="contains">CurrentVersion\Windows\Load</TargetObject>
+<TargetObject condition="contains">CurrentVersion\Windows\Run</TargetObject>
+<TargetObject condition="contains">CurrentVersion\Winlogon\Notify</TargetObject>
+<TargetObject condition="contains">CurrentVersion\Winlogon\Shell</TargetObject>
+<TargetObject condition="contains">CurrentVersion\Winlogon\Userinit</TargetObject>
+<TargetObject condition="contains">CurrentVersion\Winlogon\System</TargetObject>
+<TargetObject condition="contains">Policies\Explorer\Run</TargetObject>
+<TargetObject condition="contains">UserInitMprLogonScript</TargetObject>
+<TargetObject condition="contains">Windows\System\Scripts</TargetObject>
+<TargetObject condition="end with">\ImagePath</TargetObject>
+<TargetObject condition="end with">\ServiceDll</TargetObject>
+<TargetObject condition="end with">\ServiceManifest</TargetObject>
+<TargetObject condition="end with">\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\Notify</TargetObject>
+<TargetObject condition="end with">\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\Shell</TargetObject>
+<TargetObject condition="end with">\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\Userinit</TargetObject>
+<TargetObject condition="end with">HKLM\SOFTWARE\Microsoft\SMS\Client\Client Components\Remote Control\Audible Signal</TargetObject>
+<TargetObject condition="end with">HKLM\SOFTWARE\Microsoft\SMS\Client\Client Components\Remote Control\Permission Required</TargetObject>
+<TargetObject condition="end with">HKLM\SOFTWARE\Microsoft\SMS\Client\Client Components\Remote Control\RemCtrl Taskbar Icon</TargetObject>
+<TargetObject condition="end with">HKLM\SOFTWARE\Microsoft\SMS\Client\Client Components\Remote Control\RemCtrl Connection Bar</TargetObject>
+<TargetObject condition="end with">user shell folders\startup</TargetObject>
+<!--  COM  -->
+<TargetObject condition="end with">\InprocServer32\(Default)</TargetObject>
+<!--  RDP  -->
+<TargetObject condition="end with">Control\Terminal Server\WinStations\RDP-Tcp\PortNumber</TargetObject>
+<TargetObject condition="end with">Control\Terminal Server\fSingleSessionPerUser</TargetObject>
+<TargetObject condition="end with">LastLoggedOnUser</TargetObject>
+<TargetObject condition="end with">RDP-tcp\PortNumber</TargetObject>
+<TargetObject condition="end with">Services\PortProxy\v4tov4</TargetObject>
+<TargetObject condition="end with">fDenyTSConnections</TargetObject>
+<!--  USB  -->
+<TargetObject condition="contains">HKLM\SYSTEM\CurrentControlSet\Services\USBSTOR</TargetObject>
+<TargetObject condition="contains">HKLM\SYSTEM\CurrentControlSet\Services\UASPStor</TargetObject>
+<!--  UAC  -->
+<TargetObject condition="contains">SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\RunMRU</TargetObject>
+<TargetObject condition="contains">SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\TypedPaths</TargetObject>
+<TargetObject condition="contains">SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\DisableRegistryTools</TargetObject>
+<TargetObject condition="contains">SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\DisableTaskMgr</TargetObject>
+<TargetObject condition="contains">SOFTWARE\Policies\Microsoft\Windows NT\DNSClient\EnableMulticast</TargetObject>
+<TargetObject condition="contains">SOFTWARE\Sysinternals</TargetObject>
+<TargetObject condition="contains">SOFTWARE\Winternals</TargetObject>
+<TargetObject condition="contains">SYSTEM\CurrentControlSet\Control\SafeBoot</TargetObject>
+<TargetObject condition="contains">SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\AutoShare</TargetObject>
+<TargetObject condition="end with">HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System\EnableLUA</TargetObject>
+<TargetObject condition="end with">HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System\LocalAccountTokenFilterPolicy</TargetObject>
+<!--  Windows FW  -->
+<TargetObject condition="contains">\Software\Policies\Microsoft\WindowsFirewall</TargetObject>
+<TargetObject condition="contains">\SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\StandardProfile</TargetObject>
+<!--  SCCM  -->
+<TargetObject condition="contains">SOFTWARE\Microsoft\SMS\Client\Client Components\Remote Control</TargetObject>
+<!--  Malware IOC  -->
+<TargetObject condition="contains">NYANxCAT</TargetObject>
+<!--  (T1546001) - Change Default File Association -->
+<TargetObject condition="contains">\shell\*\command</TargetObject>
+<!--  Autostart  -->
+<Rule name="" groupRelation="and">
+<Image condition="excludes">C:\windows\system32\svchost.exe</Image>
+<TargetObject condition="contains">Group Policy\Scripts</TargetObject>
+</Rule>
+<Rule name="" groupRelation="and">
+<Image condition="excludes">C:\windows\system32\svchost.exe</Image>
+<TargetObject condition="contains">"HKLM\System\CurrentControlSet\services\Tcpip\Parameters</TargetObject>
+</Rule>
+</RegistryEvent>
+</RuleGroup>
+<RuleGroup name="" groupRelation="or">
+<RegistryEvent onmatch="exclude">
+<Image condition="begin with">C:\Program Files\Symantec\</Image>
+<Image condition="begin with">C:\Program Files (x86)\Symantec\</Image>
+<Image condition="begin with">C:\Program Files\SplunkUniversalForwarder\</Image>
+<TargetObject condition="is">HKLM\System\CurrentControlSet\Services\Tcpip\Parameters</TargetObject>
+<TargetObject condition="begin with">HKLM\System\CurrentControlSet\Services\BFE\</TargetObject>
+<Image condition="end with">:\windows\system32\msiexec.exe</Image>
+<Rule name="" groupRelation="and">
+<Image condition="contains">:\Windows\system32\svchost.exe</Image>
+<TargetObject condition="contains">\Software\Policies\Microsoft\WindowsFirewall</TargetObject>
+</Rule>
+<Rule name="" groupRelation="and">
+<Image condition="contains">:\Windows\system32\svchost.exe</Image>
+<TargetObject condition="contains">\SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\StandardProfile</TargetObject>
+</Rule>
+</RegistryEvent>
+</RuleGroup>
+<!--  EventID 15 - FileCreateStreamHash  -->
+<RuleGroup name="" groupRelation="or">
+<FileCreateStreamHash onmatch="include"/>
+</RuleGroup>
+<!--  EventID 17, 18 - PipeEvent  -->
+<RuleGroup name="" groupRelation="or">
+<PipeEvent onmatch="include">
+<PipeName condition="contains">\-server</PipeName>
+<PipeName condition="contains">\status</PipeName>
+<PipeName condition="contains">\msagent</PipeName>
+<PipeName condition="contains">\postex_</PipeName>
+<PipeName condition="contains">\MSSE</PipeName>
+<PipeName condition="contains">\status_</PipeName>
+<PipeName condition="contains">\msagent</PipeName>
+</PipeEvent>
+</RuleGroup>
+<!--  EventID 19, 20, 21 - WmiEvent  -->
+<RuleGroup name="" groupRelation="or">
+<WmiEvent onmatch="exclude"/>
+</RuleGroup>
+<!--  EventID 22 - DNSQuery  -->
+<RuleGroup name="" groupRelation="or">
+<DnsQuery onmatch="include"/>
+</RuleGroup>
+<!--  EventID 23 - FileDelete  -->
+<RuleGroup name="" groupRelation="or">
+<FileDelete onmatch="include"/>
+</RuleGroup>
+</EventFiltering>
+</Sysmon>

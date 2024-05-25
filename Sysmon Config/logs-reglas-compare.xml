@@ -1,0 +1,37 @@
+
+
+
+
+
+/dvwa/javascript%3a/*%3c/script%3e%3cimg/onerror%3d&#39;-/%22/-/%20onmouseover%3d1/-/[%60*/[]/[(new(Image)).src%3d(/%3b/%2b/9z9a7lug7u71xjq9kl9f8ocsjjpcd21usija60upX%3b.oastify.com/).replace(/.%3b/g%2c[])]//&#39;src%3d%3e
+
+    <url>%3Cscript|%3C%2Fscript|script>|script%3E|SRC=javascript|IMG%20|</url>
+    <url>%20ONLOAD=|INPUT%20|iframe%20</url>
+    <description>XSS (Cross Site Scripting) attempt.</description>
+    
+  Xss
+
+    Decoder 
+    <decoder name="web-accesslog-domain">
+    <type>web-log</type>
+    <parent>web-accesslog</parent>
+    <prematch>^\S+.\D+</prematch>
+    <regex>^\S+ (\S+) \S+ \.*[\S+ \S\d+] "(\w+) (\S+) HTTP\S+" (\d+) </regex>
+    <order>srcip, protocol, url, id</order>
+    </decoder>
+
+
+    Regla
+     <rule id="31105" level="6">
+    <if_sid>31100</if_sid>
+    <url>%3Cscript|%3C%2Fscript|script>|script%3E|SRC=javascript|IMG%20|</url>
+    <url>%20ONLOAD=|INPUT%20|iframe%20</url>
+    <description>XSS (Cross Site Scripting) attempt.</description>
+    <mitre>
+      <id>T1059.007</id>
+    </mitre>
+    <group>attack,pci_dss_6.5,pci_dss_11.4,pci_dss_6.5.7,gdpr_IV_35.7.d,nist_800_53_SA.11,nist_800_53_SI.4,tsc_CC6.6,tsc_CC7.1,tsc_CC8.1,tsc_CC6.1,tsc_CC6.8,tsc_CC7.2,tsc_CC7.3,</group>
+
+
+    xss_d/?default=English#<script>alert(1)</script>.
+    xss_d%2F%3Fdefault%3DEnglish%23%3Cscript%3Ealert(1)%3C%2Fscript%3E
