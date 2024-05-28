@@ -608,22 +608,20 @@
     <!-- Event ID 3 == Network Connection - Includes -->
     <RuleGroup groupRelation="or">
       <NetworkConnect onmatch="include">
+      C:\Program Files (x86)\Kaspersky Lab\KES.12.3.0\avp.exe
         <Image condition="excludes">C:\Windows\System32\dns.exe</Image><!--3.5-->
-        <Image condition="excludes">C:\Program Files (x86)\Kaspersky Lab\Kaspersky Security for Virtualization 5.2 Light Agent\avp.exe</Image><!--150-->
+        <Image condition="excludes all">C:\Program Files (x86)\Kaspersky Lab\;\avp.exe</Image><!--150-->
         <Image condition="excludes">C:\Program Files (x86)\Kaspersky Lab\Kaspersky Security Center\ksnproxy.exe</Image><!--250-->
         <Image condition="excludes">C:\Program Files (x86)\Fortinet\FSAE\collectoragent.exe</Image><!--280-->
         <Image condition="excludes all">C:\Program Files\WindowsApps\SpotifyAB;\Spotify.exe</Image><!--18-->
         <Image condition="excludes">C:\Program Files (x86)\Kaspersky Lab\Kaspersky Security Center\klserver.exe</Image><!--60-->
         <Image condition="excludes">C:\Program Files\DBeaver\dbeaver.exe</Image><!--106-->
-        <Image condition="excludes">C:\Program Files (x86)\Kaspersky Lab\KES.12.3.0\avp.exe</Image><!--220-->
         <Image condition="excludes">C:\Program Files (x86)\Kaspersky Lab\NetworkAgent\klnagent.exe</Image><!--52-->
-        <Image condition="excludes">C:\Program Files (x86)\Kaspersky Lab\KES.12.3.0\avpsus.exe</Image><!--28-->
+        <Image condition="excludes all">C:\Program Files (x86)\Kaspersky Lab\;\avpsus.exe</Image><!--28-->
         <Image condition="excludes all">C:\Users\;\AppData\Local\DBeaver\dbeaver.exe</Image><!--79-->
         <Image condition="excludes">C:\Program Files (x86)\Fortinet\FSAE\TSAgent.exe</Image><!--3-->
         <Image condition="excludes">C:\Program Files\Kaspersky Lab\Kaspersky Security Center Web Console\node.exe</Image><!--1-->
         <Image condition="excludes">C:\Program Files (x86)\Kaspersky Lab\Kaspersky Security Center\klnagent.exe</Image><!--13-->
-        <Image condition="excludes all">C:\Program Files (x86)\Kaspersky Lab\KES;\avpsus.exe</Image><!--3-->
-        <Image condition="excludes all">C:\Program Files (x86)\Kaspersky Lab\KES;\avp.exe</Image><!--3-->
         <Image condition="excludes all">C:\Users\;\AppData\Local\slack\app;\slack.exe</Image><!--3-->
         <Image name="technique_id=T1021,technique_name=Remote Services" condition="image">vnc.exe</Image>
         <Image name="technique_id=T1021,technique_name=Remote Services" condition="image">vncviewer.exe</Image>
