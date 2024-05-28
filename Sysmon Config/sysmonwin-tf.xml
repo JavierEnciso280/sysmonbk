@@ -602,8 +602,8 @@
         <Image condition="contains">setup</Image>
         <Image condition="end with">slack.exe</Image>
         <Image condition="end with">AppData\Local\Microsoft\Teams\current\Teams.exe</Image>
-        <Image condition="includes all">C:\Users\;\AppData\Local\Programs\Microsoft VS Code\Code.exe</Image><!--  -->
-        <Image condition="includes all">C:\Users\;\AppData\Roaming\Spotify\Spotify.exe</Image><!--  -->
+        <Image condition="contains all">C:\Users\;\AppData\Local\Programs\Microsoft VS Code\Code.exe</Image><!--  -->
+        <Image condition="contains all">C:\Users\;\AppData\Roaming\Spotify\Spotify.exe</Image><!--  -->
       </FileCreateTime>
     </RuleGroup>
     <!-- Event ID 3 == Network Connection - Includes -->
