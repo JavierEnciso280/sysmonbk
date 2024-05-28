@@ -1,4 +1,3 @@
-Reglas de sysmon
 <Sysmon schemaversion="4.81">
   <EventFiltering>
      <!-- Exclusiones iniciales-->
