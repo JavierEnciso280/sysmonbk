@@ -609,7 +609,6 @@
     <!-- Event ID 3 == Network Connection - Includes -->
     <RuleGroup groupRelation="or">
       <NetworkConnect onmatch="include">
-        <Image condition="excludes">C:\Windows\System32\dns.exe</Image><!--3.5-->
         <Image condition="excludes all">C:\Users\;\AppData\Local\DBeaver\dbeaver.exe</Image><!--79-->
         <Image condition="excludes all">C:\Users\;\AppData\Local\slack\app;\slack.exe</Image><!--3-->
         <Image name="technique_id=T1021,technique_name=Remote Services" condition="image">vnc.exe</Image>
@@ -800,6 +799,7 @@
     <!-- Event ID 3 == Network Connection - Excludes -->
     <RuleGroup groupRelation="or">
       <NetworkConnect onmatch="exclude">
+        <Image condition="is">C:\Windows\System32\dns.exe</Image><!--3.5-->
         <Image condition="is">C:\Program Files (x86)\Fortinet\FSAE\collectoragent.exe</Image><!--280-->
         <Image condition="begin with">C:\Program Files (x86)\Kaspersky Lab\</Image> <!---->
         <Image condition="end with">AppData\Roaming\Dropbox\bin\Dropbox.exe</Image>
@@ -1367,6 +1367,7 @@
           <Image condition="contains all">C:\Windows\;\WindowsPowerShell\v1.0\powershell.exe</Image>
           <TargetFilename condition="contains all">C:\Users\;\AppData\Local\Temp\__PSScriptPolicyTest;.ps1</TargetFilename><!-- -->
         </Rule>
+        <Image condition="is">C:\Program Files (x86)\GFI\LanGuard 12 Agent\lnssatt.exe</Image>
         <Image condition="is">C:\Program Files (x86)\ARTech\GeneXus\GeneXusXEv3\Genexus.exe</Image> <!---->
         <Image condition="is">C:\Program Files (x86)\ossec-agent\wazuh-agent.exe</Image> <!---->
         <Image condition="is">C:\Program Files (x86)\Dell\CommandUpdate\InvColPC.exe</Image>
