@@ -624,3 +624,15 @@
 </RuleGroup>
 </EventFiltering>
 </Sysmon>
+
+
+  
+        <Image condition="excludes all">C:\Program Files (x86)\Kaspersky Lab\;\avp.exe</Image><!--150-->
+        <Image condition="excludes">C:\Program Files (x86)\Kaspersky Lab\Kaspersky Security Center\ksnproxy.exe</Image><!--250-->
+        <Image condition="excludes all">C:\Program Files\WindowsApps\SpotifyAB;\Spotify.exe</Image><!--18-->
+        <Image condition="excludes">C:\Program Files (x86)\Kaspersky Lab\Kaspersky Security Center\klserver.exe</Image><!--60-->
+        <Image condition="excludes">C:\Program Files\DBeaver\dbeaver.exe</Image><!--106-->
+        <Image condition="excludes">C:\Program Files (x86)\Kaspersky Lab\NetworkAgent\klnagent.exe</Image><!--52-->
+        <Image condition="excludes">C:\Program Files\Kaspersky Lab\Kaspersky Security Center Web Console\node.exe</Image><!--1-->
+        <Image condition="excludes">C:\Program Files (x86)\Kaspersky Lab\Kaspersky Security Center\klnagent.exe</Image><!--13-->
+         <Image condition="excludes all">C:\Program Files (x86)\Kaspersky Lab\;\avpsus.exe</Image><!--28-->

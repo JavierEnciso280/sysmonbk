@@ -602,25 +602,15 @@
         <Image condition="contains">setup</Image>
         <Image condition="end with">slack.exe</Image>
         <Image condition="end with">AppData\Local\Microsoft\Teams\current\Teams.exe</Image>
-        <Image condition="end with">C:\Users\vboxuser\AppData\Local\Programs\Microsoft VS Code\Code.exe</Image><!--  -->
+        <Image condition="includes all">C:\Users\;\AppData\Local\Programs\Microsoft VS Code\Code.exe</Image><!--  -->
+        <Image condition="includes all">C:\Users\;\AppData\Roaming\Spotify\Spotify.exe</Image><!--  -->
       </FileCreateTime>
     </RuleGroup>
     <!-- Event ID 3 == Network Connection - Includes -->
     <RuleGroup groupRelation="or">
       <NetworkConnect onmatch="include">
         <Image condition="excludes">C:\Windows\System32\dns.exe</Image><!--3.5-->
-        <Image condition="excludes all">C:\Program Files (x86)\Kaspersky Lab\;\avp.exe</Image><!--150-->
-        <Image condition="excludes">C:\Program Files (x86)\Kaspersky Lab\Kaspersky Security Center\ksnproxy.exe</Image><!--250-->
-        <Image condition="excludes">C:\Program Files (x86)\Fortinet\FSAE\collectoragent.exe</Image><!--280-->
-        <Image condition="excludes all">C:\Program Files\WindowsApps\SpotifyAB;\Spotify.exe</Image><!--18-->
-        <Image condition="excludes">C:\Program Files (x86)\Kaspersky Lab\Kaspersky Security Center\klserver.exe</Image><!--60-->
-        <Image condition="excludes">C:\Program Files\DBeaver\dbeaver.exe</Image><!--106-->
-        <Image condition="excludes">C:\Program Files (x86)\Kaspersky Lab\NetworkAgent\klnagent.exe</Image><!--52-->
-        <Image condition="excludes all">C:\Program Files (x86)\Kaspersky Lab\;\avpsus.exe</Image><!--28-->
         <Image condition="excludes all">C:\Users\;\AppData\Local\DBeaver\dbeaver.exe</Image><!--79-->
-        <Image condition="excludes">C:\Program Files (x86)\Fortinet\FSAE\TSAgent.exe</Image><!--3-->
-        <Image condition="excludes">C:\Program Files\Kaspersky Lab\Kaspersky Security Center Web Console\node.exe</Image><!--1-->
-        <Image condition="excludes">C:\Program Files (x86)\Kaspersky Lab\Kaspersky Security Center\klnagent.exe</Image><!--13-->
         <Image condition="excludes all">C:\Users\;\AppData\Local\slack\app;\slack.exe</Image><!--3-->
         <Image name="technique_id=T1021,technique_name=Remote Services" condition="image">vnc.exe</Image>
         <Image name="technique_id=T1021,technique_name=Remote Services" condition="image">vncviewer.exe</Image>
@@ -810,6 +800,8 @@
     <!-- Event ID 3 == Network Connection - Excludes -->
     <RuleGroup groupRelation="or">
       <NetworkConnect onmatch="exclude">
+        <Image condition="is">C:\Program Files (x86)\Fortinet\FSAE\collectoragent.exe</Image><!--280-->
+        <Image condition="begin with">C:\Program Files (x86)\Kaspersky Lab\</Image> <!---->
         <Image condition="end with">AppData\Roaming\Dropbox\bin\Dropbox.exe</Image>
         <Image condition="end with">winlogbeat.exe</Image>
         <Image condition="end with">packetbeat.exe</Image>
@@ -1298,13 +1290,8 @@
         <TargetFilename condition="begin with">C:\Windows\Tasks\</TargetFilename>
         <TargetFilename condition="contains">\Start Menu</TargetFilename>
         <TargetFilename condition="contains">\Startup</TargetFilename>
-        <Image condition="excludes all">C:\Program Files (x86)\Kaspersky Lab\;</Image> <!---->
         <Image condition="excludes all">C:\Users\;\AppData\Local\slack\app;\slack.exe</Image> <!---->
         <Image condition="excludes all">C:\Program Files (x86)\GFI\LanGuard;12;Agent\lnssatt.exe</Image>  <!---->
-        <Image condition="excludes">C:\Program Files (x86)\Kaspersky Lab\NetworkAgent\klnagent.exe</Image> <!--4.9-->
-        <Image condition="excludes">C:\Program Files (x86)\Kaspersky Lab\Kaspersky Security Center\klnagent.exe</Image> <!--183-->
-        <Image condition="excludes all">C:\Program Files (x86)\Kaspersky Lab\KES;\avp.exe</Image> <!--2.1-->
-        <Image condition="excludes">C:\Program Files (x86)\Kaspersky Lab\Kaspersky Security for Windows Server\kavfs.exe</Image> <!--56-->
         <TargetFilename condition="is">C:\Program Files (x86)\ossec-agent\wazuh-agent.state</TargetFilename><!--1.5-->
         <TargetFilename condition="is">C:\Program Files (x86)\ossec-agent\queue\logcollector\file_status.json</TargetFilename><!--120-->
         <TargetFilename condition="is">C:\Program Files (x86)\ossec-agent\wazuh-logcollector.state</TargetFilename><!--129-->
@@ -1345,6 +1332,10 @@
           <TargetFilename condition="contains all">C:\Windows\Temp\etilqs;</TargetFilename>
         </Rule>
         <Rule groupRelation="and">
+          <Image condition="begin with">C:\Program Files (x86)\Kaspersky Lab\</Image><!-- 27/5/2024 -->
+          <TargetFilename condition="begin with">C:\ProgramData\KasperskyLab\</TargetFilename>
+        </Rule>
+        <Rule groupRelation="and">
           <Image condition="is">System</Image>
           <TargetFilename condition="contains all">C:\Windows\Logs\WindowsUpdate\WindowsUpdate;.etl</TargetFilename><!--  -->
         </Rule>
@@ -1376,7 +1367,8 @@
           <Image condition="contains all">C:\Windows\;\WindowsPowerShell\v1.0\powershell.exe</Image>
           <TargetFilename condition="contains all">C:\Users\;\AppData\Local\Temp\__PSScriptPolicyTest;.ps1</TargetFilename><!-- -->
         </Rule>
-        <Image condition="is">C:\Program Files (x86)\GFI\LanGuard 12 Agent\lnssatt.exe</Image>
+        <Image condition="is">C:\Program Files (x86)\ARTech\GeneXus\GeneXusXEv3\Genexus.exe</Image> <!---->
+        <Image condition="is">C:\Program Files (x86)\ossec-agent\wazuh-agent.exe</Image> <!---->
         <Image condition="is">C:\Program Files (x86)\Dell\CommandUpdate\InvColPC.exe</Image>
         <Image condition="is">C:\Windows\system32\igfxCUIService.exe</Image>
         <Image condition="is">C:\Program Files (x86)\Ivanti\Workspace Control\pfwsmgr.exe</Image>
