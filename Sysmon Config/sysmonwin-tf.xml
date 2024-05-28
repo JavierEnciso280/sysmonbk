@@ -608,7 +608,6 @@
     <!-- Event ID 3 == Network Connection - Includes -->
     <RuleGroup groupRelation="or">
       <NetworkConnect onmatch="include">
-      C:\Program Files (x86)\Kaspersky Lab\KES.12.3.0\avp.exe
         <Image condition="excludes">C:\Windows\System32\dns.exe</Image><!--3.5-->
         <Image condition="excludes all">C:\Program Files (x86)\Kaspersky Lab\;\avp.exe</Image><!--150-->
         <Image condition="excludes">C:\Program Files (x86)\Kaspersky Lab\Kaspersky Security Center\ksnproxy.exe</Image><!--250-->
