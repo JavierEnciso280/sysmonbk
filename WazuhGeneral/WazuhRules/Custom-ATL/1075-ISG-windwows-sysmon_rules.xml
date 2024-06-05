@@ -1,0 +1,897 @@
+<!-- Log Sysmon Alerts -->
+<group name="sysmon">
+	
+	<rule id="101101" level="3">
+		<if_sid>61603</if_sid>                                              
+      <options>no_full_log</options>
+		<description>Sysmon - Event 1: Creación de proceso.</description>
+	</rule>
+
+	<rule id="101102" level="14">
+		<if_sid>61604</if_sid>
+      <options>no_full_log</options>
+		<description>Sysmon - Event 2: A process changed a file creation time.</description>
+	</rule>
+	<rule id="101103" level="5">
+		<if_sid>61605</if_sid>
+      <options>no_full_log</options>
+		<description>Sysmon - Event 3: Network connection.</description>
+	</rule>
+	
+	<rule id="101104" level="5">
+		<if_sid>61606</if_sid>
+      <options>no_full_log</options>
+		<description>Sysmon - Event 4: Sysmon service state changed</description>
+	</rule>
+    <rule id="101154" level="5">
+        <if_sid>101104</if_sid>
+        <field name="win.eventdata.state">Started</field>
+        <description>Servicio de Sysmon ha iniciado</description>
+    </rule>
+	<rule id="101106" level="5">
+		<if_sid>61608</if_sid>
+      <options>no_full_log</options>
+		<description>Sysmon - Event 6: Driver loaded.</description>
+	</rule>
+
+	<rule id="101108" level="5">
+		<if_sid>61610</if_sid>
+      <options>no_full_log</options>
+		<description>Sysmon - Event 8: CreateRemoteThread.</description>
+	</rule>
+	
+	<!--Este evento registra los archivos que se escriben en el disco del sistema, por ejemplo si se crea un directorio, descargas, cambios temporales relacionados a servicios o ejecutables, tambien cuando se copia o se mueve un directorio o archivo entre otros eventos-->
+	<rule id="101111" level="5">
+		<if_sid>61613</if_sid>
+      <options>no_full_log</options>
+		<description>Sysmon - Event 11: FileCreate: $(win.eventdata.targetFileName)</description>
+	</rule>
+	
+	<rule id="101112" level="5">
+		<if_sid>61614</if_sid>
+      <options>no_full_log</options>
+		<description>Sysmon - Event 12: RegistryEvent (Object create and delete).</description>
+	</rule>
+	
+	<rule id="101113" level="5">
+		<if_sid>61615</if_sid>
+      <options>no_full_log</options>
+		<description>Sysmon - Event 13: RegistryEvent. Objeto: $(win.eventdata.targetObject)</description>
+	</rule>
+	
+	<!-- <rule id="101114" level="5">
+		<if_sid>61600</if_sid>
+		<field name="win.system.eventID">^22$</field>
+		<description>Sysmon - Event 22: DNS Query.</description>
+		<options>no_full_log</options>
+	</rule> -->
+	
+	101115 al 101120 libre
+	<!--***************************************** Excepciones de Sysmon apartir de aquí ************************************************-->
+   **************************************************** EVENT ID 1 - PROCESS CREATE **********************************************************
+  
+  Exluir eventos generados por OneDrive 
+  FileCoAuth.exe es un archivo ejecutable que forma parte del software Microsoft OneDrive. Este archivo es desarrollado por Microsoft y generalmente se encuentra en el directorio C:\Program   Files\Microsoft OneDrive\
+   <rule id="101300" level="0">
+        <if_sid>101101</if_sid>
+        <field name="win.eventdata.image">FileCoAuth.exe$</field>
+        <description>Eventos generados por OneDrive. </description>
+    </rule>
+   
+   ---->Inicio Creacion de proceso: CMD/////////////////////////////////////////////////
+   <!-- Renzo: Regla principal de CMD. Se modifica la regla para que muestre en la descripcion el nivel de integridad, Medium significa abrir CMD normalmente, High significa Privilegios de Administrador y System significa Privilegios máximos de System -->
+   <rule id="101302" level="0">
+        <if_sid>101101</if_sid>
+        <field name="win.eventdata.image">^C:\\\\Windows\\\\System32\\\\cmd.exe$</field>
+        <field name="win.eventdata.integrityLevel">^Medium$|^high$|^System$</field>
+        <description>Grupo de eventos de cmd.</description>
+   </rule>
+  win.eventdata.integrityLevel: Medium/High/System
+  antes 101403
+   <rule id="101303" level="10">
+        <if_sid>101302</if_sid>
+        <field name="win.eventdata.integrityLevel">^Medium$</field>
+        <description>CMD iniciado con nivel de privilegios Medium, Directorio Actual: $(win.eventdata.currentDirectory)</description>
+   </rule>
+   
+   procesos de Procesos excluidos de este evento por el momento 
+   <rule id="101304" level="14">
+        <if_sid>101302</if_sid>
+        <field name="win.eventdata.integrityLevel">^High$</field>
+        <field name="win.eventdata.currentDirectory" type="pcre2" negate="yes">C:\\\\Procesos</field>
+        <description>ATENCIÓN. CMD iniciado con altos privilegios</description>
+   </rule>
+   Excluir a Pandora Agent, agente de antivirus WatchGuard
+    <rule id="101305" level="14">
+        <if_sid>101302</if_sid>
+        <field name="win.eventdata.integrityLevel">^System$</field>
+        <field name="win.eventdata.currentDirectory" type="pcre2" negate="yes">^C:\\\\Program Files\\\\pandora_agent\\\\util</field>
+        <field name="win.eventdata.parentImage" type="pcre2" negate="yes">^C:\\\\Program Files\\\\pandora_agent\\\\PandoraAgent.exe$</field>
+        <description>ATENCIÓN. CMD iniciado con privilegios System</description>
+   </rule>
+   
+   <!--Renzo: Se crea esta regla con overwrite, muchos procesos ajenos a explorer y cmd mismo invocan CMD, se genera la exclusion de Pandora mientras tanto. Tener en cuenta que Python y otros son alertados de esta manera-->
+   
+   <rule id="92052" level="15" overwrite="yes">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.originalFileName" type="pcre2">(?i)cmd\.EXE</field>
+    <field name="win.eventdata.parentImage" type="pcre2" negate="yes">(?i)(explorer|cmd|pandoraagent|svchost|userinit)\.EXE</field>
+    <options>no_full_log</options>
+    <description>ATENCION. CMD iniciado por un proceso anormal. Verificar</description>
+    <mitre>
+      <id>T1059.003</id>
+    </mitre>
+  </rule>
+  ---->Fin Creacion de proceso: CMD/////////////////////////////////////////////////////
+ <rule id="101306" level="10">
+        <if_sid>101101</if_sid>
+        <field name="win.eventdata.image" type="pcre2">(?i)[c-z]:\\\\Windows\\\\System32\\\\wscript.exe$</field>
+        <description>ATENCION. Script ejecutado mediante Wscript.exe (Interfaz gráfica)</description>
+   </rule>
+  
+  Ejecucion mediante cmd
+  <rule id="101307" level="10">
+        <if_sid>101101</if_sid>
+        <field name="win.eventdata.image" type="pcre2">(?i)[c-z]:\\\\Windows\\\\System32\\\\cscript.exe$</field>
+        <description>ATENCION. Script ejecutado mediante Cscript.exe (Consola) Comando: $(win.eventdata.commandLine)</description>
+   </rule>
+  
+  <!-- Renzo: Regla principal de PowerShell. Se modifica la regla para que muestre en la descripcion el nivel de integridad, Medium significa abrir PowerShell normalmente, High significa Privilegios de Administrador y System significa Privilegios máximos de System -->
+    <rule id="101308" level="0">
+        <if_sid>101101</if_sid>
+        <field name="win.eventdata.image">C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe$</field>
+        <field name="win.eventdata.integrityLevel">^Medium$|^high$|^System$</field>
+        <description>Grupo creación de proceso en Powershell</description>
+    </rule>
+    Medium
+    <rule id="101309" level="10">
+        <if_sid>101308</if_sid>
+        <field name="win.eventdata.image">C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe$</field>
+        <field name="win.eventdata.integrityLevel">^Medium$</field>
+        <description>Powershell iniciado con nivel de privilegios Medium, Directorio Actual: $(win.eventdata.currentDirectory)</description>
+    </rule>
+    High
+    <rule id="101310" level="15">
+        <if_sid>101308</if_sid>
+        <field name="win.eventdata.image">C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe$</field>
+        <field name="win.eventdata.integrityLevel">^High$</field>
+        <description>ATENCIÓN. Powershell iniciado con altos privilegios.</description>
+    </rule>
+    System
+    <rule id="101311" level="14">
+        <if_sid>101308</if_sid>
+        <field name="win.eventdata.image">C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe$</field>
+        <field name="win.eventdata.integrityLevel">^System</field>
+        <description>ATENCIÓN. Powershell iniciado con privilegios System.</description>
+    </rule>
+  
+  Tambien creacion de proceso pero especificamente estos ejecutables, agregar mas valores si es necesario
+  <!-- <rule id="101312" level="15">-->
+  <!--  <if_sid>101302,101308,92032,101101,92039</if_sid>-->
+  <!--  <field name="win.eventdata.commandLine" type="pcre2">(?i)(whoami\.exe|whoami|ipconfig\.exe|ipconfig|nslookup\.exe|nslookup|systeminfo\.exe|systeminfo|sysinfo\.exe|sysinfo|netstat\.exe|netstat|qprocess\.exe|qprocess|net\.exe|net|net1\.exe|net1|netcat\.exe|netcat|tasklist\.exe|tasklist|net1 user|net user)</field>-->
+  <!--  <description>ATENCIÓN. proceso a tener en cuenta. Comando completo: $(win.eventdata.commandLine)</description>-->
+  <!--</rule>-->
+  
+  Excluir eventos de OneDrive detectados por regla 101403, exluir directamente desde el evento principal 101101
+  comando  
+
+   <rule id="101313" level="10">
+    <if_sid>101101</if_sid>
+    <field name="win.eventdata.commandLine" type="pcre2">C:\\\\Windows\\\\System32\\\\cmd\.exe\\\\"\s+\/q\s+\/c\s+rmdir\s+\/s\s+\/q\s+\.+C:\\\\Users\\\\\.+\\\\AppData\\\\Local\\\\Microsoft\\\\OneDrive</field>
+    <description>Proceso de eliminacion de Directorio habitual de OneDrive</description>
+  </rule>
+  
+  Creacion de procesos que tienene como intermediario a cmd
+  win.eventdata.parentCommandLine: \"C:\\Windows\\system32\\cmd.exe\"
+  win.eventdata.parentImage: C:\\Windows\\System32\\cmd.exe
+ 
+  <rule id="101314" level="10">
+    <if_sid>101101</if_sid>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)vssadmin.exe</field>
+    <field name="win.eventdata.parentImage">C:\\\\Windows\\\\System32\\\\cmd.exe$</field>
+    <description>Creación de proceso a través de CMD</description>
+  </rule>
+  
+  Creacion de procesos a traves de Powershell
+    <rule id="101315" level="10">
+       <if_sid>101101</if_sid>
+       <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)vssadmin.exe</field>
+       <field name="win.eventdata.parentImage">C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe$</field>
+       <description>Creación de proceso a través de PowerShell</description>
+    </rule>
+      <!--comando: & sc.exe config EjecutarScript binPath= "C:\Users\vboxuser\Documents\pruebas.ps1"-->
+    <rule id="101316" level="15">
+        <if_sid>101101</if_sid>
+        <field name="win.eventdata.commandLine">config</field>
+        <field name="win.eventdata.image">C:\\\\Windows\\\\System32\\\\sc.exe</field>
+        <description>ATENCIÓN. Modificación de servicio a través de powershell</description>
+        <mitre>
+            <id>T1053</id>
+        </mitre>
+    </rule>
+    vssadmin
+    <rule id="101317" level="15">
+    <if_sid>101101</if_sid>
+    <field name="win.eventdata.image">C:\\\\Windows\\\\System32\\\\vssadmin.exe</field>
+    <field name="win.eventdata.commandLine">Create|Shadow|List|vssadmin</field>
+    <field name="win.eventdata.parentImage">C:\\\\Windows\\\\System32\\\\cmd.exe|C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe</field>
+    <description>ATENCION. Se ha invocado a vssadmin.exe mediante consola. Posible extraccion de credenciales. $(win.eventdata.commandLine)</description>
+  </rule>
+  
+  <rule id="101318" level="15">
+    <if_sid>101307</if_sid>
+    <field name="win.eventdata.image">C:\\\\Windows\\\\System32\\\\cscript.exe|C:\\\\Windows\\\\System32\\\\wscript.exe</field>
+    <field name="win.eventdata.commandLine">Create|Shadow|List|vssadmin</field>
+    <field name="win.eventdata.parentImage">C:\\\\Windows\\\\System32\\\\cmd.exe|C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe</field>
+    <description>ATENCION. Se ha invocado a vssadmin.exe mediante la ejecucion de un script. Posible extraccion de credenciales. $(win.eventdata.commandLine)</description>
+  </rule>
+  
+  <rule id="101319" level="15">
+    <if_sid>101314, 101315, 101101</if_sid>
+    <field name="win.eventdata.commandLine">sc\s+config</field>
+    <field name="win.eventdata.integrityLevel">^High$|^Medium</field>
+    <description>ATENCION. sc config ejecutado. Comando:  $(win.eventdata.commandLine)</description>
+  </rule>
+ 
+  <rule id="101320" level="14">
+    <if_sid>101101</if_sid>
+    <field name="win.eventdata.parentImage" type="pcre2">(?i)cmd\.EXE|(?i)powershell\.EXE|(?i)pwsh\.EXE</field>
+    <field name="win.eventdata.parentCommandLine" type="pcre2">(?i)\s\/C\s</field>
+    <options>no_full_log</options>
+    <description>ATENCION. Se ejecuto un shell desde consola. Verificar Comando: $(win.eventdata.commandLine)</description>
+    <mitre>
+      <id>T1087</id>
+      <id>T1059.003</id>
+    </mitre>
+  </rule>
+  
+ <rule id="92032" level="10" overwrite="yes">
+    <if_sid>101101</if_sid>
+    <field name="win.eventdata.parentImage" type="pcre2">(?i)cmd\.EXE</field>
+    <field name="win.eventdata.parentCommandLine" type="pcre2">(?i)\s\/C\s</field>
+    <options>no_full_log</options>
+    <description>ATENCIÓN. Se ejecutó un shell desde CMD. Verificar Comando: $(win.eventdata.commandLine)</description>
+    <mitre>
+      <id>T1087</id>
+      <id>T1059.003</id>
+    </mitre>
+  </rule>
+ 101321 libre
+  <!--CREACION DE PROCESO A TRAVES DE NC.EXE (REVERSE SHELL) se obtiene los hashes-->
+  <!--win.eventdata.hashes: SHA1=08664F5C3E07862AB9B531848AC92D08C8C6BA5A,MD5=E0DB1D3D47E312EF62E5B0C74DCEAFE5,SHA256=B3B207DFAB2F429CC352BA125BE32A0CAE69FE4BF8563AB7D0128BBA8C57A71C,IMPHASH=98CE7B6533CBD67993E36DAFB4E95946-->
+  <rule id="101322" level="15">
+    <if_sid>101101</if_sid>
+    <match>SHA1=08664F5C3E07862AB9B531848AC92D08C8C6BA5A,MD5=E0DB1D3D47E312EF62E5B0C74DCEAFE5,SHA256=B3B207DFAB2F429CC352BA125BE32A0CAE69FE4BF8563AB7D0128BBA8C57A71C,IMPHASH=98CE7B6533CBD67993E36DAFB4E95946</match>
+    <description>ATENCION nc.exe detectado. $(win.eventdata.commandLine) ejecutado en el sistema. </description>
+  </rule>
+  <!--La regla 92031 Discovery activity executed(deriva de ProcessCreate) detecta la ejecucion de comandos a través de la imagen net.exe, net puede utilizarse entre otras cosas para parar o iniciar un servicio-->
+  Este comando es ejecutado por el mismo agente de wazuh, se ven eventos de stop y start en un milisegundo
+ --- IntegrityLevel es System como proceso normal de ossec
+ --- parentCommandLine es net stop Wazuh como proceso normal de ossec
+ --- Utiliza las imagenes de SysWOW64 y no de System32 para este proceso
+  Si se ejecuta net stop wazuh fuera de estos parametros, generar alerta
+    <rule id="101323" level="15">
+    <if_sid>92031</if_sid>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)net\s+stop\s+Wazuh|net1\s+STOP\s+Wazuh</field>
+    <field name="win.eventdata.currentDirectory" type="pcre2" negate="yes">C:\\\\Program Files (x86)\\\\ossec-agent</field>
+    <field name="win.eventdata.integrityLevel" type="pcre2" negate="yes">^System$</field>
+    <field name="win.eventdata.parentCommandLine" type="pcre2" negate="yes">^net\s+stop\s+Wazuh$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">^C:\\\\Windows\\\\SysWOW64\\\\net1\.exe$</field>
+    <description>ATENCIÓN. $(win.eventdata.commandLine) ejecutado.</description>
+  </rule>
+ 101324 libre
+ 101325 libre
+  <rule id="101326" level="14">
+        <if_sid>101314</if_sid>
+        <field name="win.eventdata.company">^Sysinternals$</field>
+        <field name="win.eventdata.product" type="pcre2" negate="yes">^Sysinternals Sysmon$</field>
+        <description>ATENCIÓN. Producto de Sysinternals iniciado. Producto: $(win.eventdata.product)</description>
+   </rule>
+  antes 101427
+  <rule id="101327" level="14">
+        <if_sid>101314</if_sid>
+        <field name="win.eventdata.product" type="pcre2">^Sysinternals PsExec$</field>
+        <description>ATENCIÓN. PSExec fue ejecutado en el equipo</description>
+   </rule>
+   antes 101428
+   <rule id="101328" level="14">
+        <if_sid>101314</if_sid>
+        <field name="win.eventdata.product" type="pcre2">^Sysinternals PsKill$</field>
+        <description>ATENCIÓN. PSKill fue ejecutado en el equipo</description>
+   </rule>
+   <rule id="101329" level="14">
+        <if_sid>101314</if_sid>
+        <field name="win.eventdata.product" type="pcre2">^Sysinternals PsList$</field>
+        <description>ATENCIÓN. PSList fue ejecutado en el equipo</description>
+   </rule>
+ 
+   <rule id="101330" level="14">
+        <if_sid>101314</if_sid>
+        <field name="win.eventdata.product" type="pcre2">^Sysinternals PsFile$</field>
+        <description>ATENCIÓN. PSFile fue ejecutado en el equipo</description>
+   </rule>
+   101331 libre
+   <rule id="101332" level="15">
+	    <if_sid>101101</if_sid>
+	    <field name="win.eventdata.commandLine">\s*sc\s*config\s*</field>
+	    <field name="win.eventdata.parentImage" type="pcre2">\.+</field>
+	    <field name="win.eventdata.image" type="pcre2">\.+</field>
+	    <field name="win.eventdata.parentUser" type="pcre2" negate="yes">^NT AUTHORITY\\\\SYSTEM$</field>
+	    <description>ATENCIÓN. Se ha ejecutado sc config . Cadena completa: $(win.eventdata.commandLine)</description>
+	</rule>
+	101333 libre
+	101334 libre
+	<rule id="101335" level="14">
+	    <if_sid>101101</if_sid>
+	    <field name="win.eventdata.parentImage">^C:\\\\Windows\\\\System32\\\\svchost.exe$</field>
+	    <field name="win.eventdata.parentCommandLine">^C:\\\\WINDOWS\\\\system32\\\\svchost.exe -k netsvcs -p -s Schedule</field>
+	    <field name="win.eventdata.image">^C:\\\\Windows\\\\System32\\\\sc.exe$</field>
+	    <field name="win.eventdata.originalFileName">^sc.exe$</field>
+	    <field name="win.eventdata.parentUser">NT AUTHORITY\\\\SYSTEM|NT AUTHORITY\\\\SERVICIO LOCAL</field>
+	    <field name="win.eventdata.user">^NT AUTHORITY\\\\SERVICIO LOCAL</field>
+	    <description>Cambio de configuración servicio ejecutado por SYSTEM. Comando $(win.eventdata.commandLine)</description>
+	</rule>
+	<!--Desde aquí se van subdividiendo o recategorizando los servicios que SYSTEM inicia automáticamente a partir de la regla 102058-->
+	<!--servicio 1 de System-->
+	<rule id="101336" level="0">
+	    <if_sid>101335</if_sid>
+	    <field name="win.eventdata.commandLine">\\"C:\\\\Windows\\\\system32\\\\sc.exe\\" start w32time task_started|C:\\\\Windows\\\\system32\\\\sc.exe start w32time task_started</field>
+	    <description>$(win.eventdata.commandLine). Este servicio se inicia automáticamente. Servicio de Windows Time, responsable de mantener y sincronizar la hora del sistema en un sistema Windows</description>
+	</rule>
+	<!--servicio 2 de System-->
+	<rule id="101337" level="0">
+	    <if_sid>101335</if_sid>
+	    <field name="win.eventdata.commandLine">\\"C:\\\\Windows\\\\system32\\\\sc.exe\\" start pushtoinstall registration</field> 
+	    <description>$(win.eventdata.commandLine). Proporciona soporte de infraestructura para Microsoft Store. Este servicio se inicia automáticamente y, si se desactiva, las instalaciones remotas no funcionarán correctamente.</description>
+	</rule>
+	<!--Servicio 3 de System-->
+	<rule id="101338" level="0">
+	    <if_sid>101335</if_sid>
+	    <field name="win.eventdata.commandLine">\\"C:\\\\Windows\\\\system32\\\\sc.exe\\" start wuauserv</field>
+        <description>$(win.eventdata.commandLine). El servicio "wuauserv" (Windows Update AutoUpdate Service) es esencial para la descarga e instalación de actualizaciones del sistema operativo y otros componentes de software en un sistema Windows.</description>
+	</rule>
+	<!--Bloque de conexiones rdp-->
+	101339 libre
+	101340 libre
+	101341 libre
+	101342 libre
+	101343 libre
+	<rule id="101344" level="0">
+        <if_sid>60000</if_sid>
+        <field name="win.system.channel">^Microsoft-Windows-TerminalServices-RemoteConnectionManager/Operational$</field>
+        <options>no_full_log</options>
+        <description>Grupo de eventos de conexiones remotas</description>
+    </rule>
+    <rule id="101345" level="0">
+        <if_sid>60009</if_sid>
+        <field name="win.system.channel">^Microsoft-Windows-TerminalServices-LocalSessionManager/Operational$</field>
+        <options>no_full_log</options>
+        <description>Grupo de eventos de conexiones remotas</description>
+    </rule>
+    <rule id="101346" level="3">
+        <if_sid>60009</if_sid>
+        <field name="win.system.eventID">^21$|^22$|^24$|^25$</field>
+        <description>Grupo de eventos de conexiones</description>
+    </rule>
+    <rule id="101347" level="14">
+        <if_sid>101346</if_sid>
+        <field name="win.system.eventID">^25$</field>
+        <field name="win.eventXML.address" type="pcre2">\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}</field>
+        <field name="win.eventXML.address" type="pcre2" negate="yes">^LOCAL$</field>
+        <description>ATENCION. Reconexion remota desde IP $(win.eventXML.address)</description>
+    </rule>
+    
+    <rule id="101348" level="10">
+        <if_sid>60009</if_sid>
+        <field name="win.system.eventID">^261$|^1149$</field>
+        <options>no_full_log</options>
+        <description>La escucha RDP-Tcp recibió una conexión</description>
+    </rule>
+    <rule id="101349" level="14">
+        <if_sid>101137</if_sid>
+        <field name="win.system.eventID">$261$</field>
+        <description>Se recibio una conexion mediante RDP-Tcp</description>
+    </rule>
+    <rule id="101350" level="14">
+        <if_sid>101148</if_sid>
+        <field name="win.system.eventID">^1149$</field>
+        <description>ATENCIÓN. Escritorio Remoto ha sido iniciado por $(win.eventXML.param1) desde ip $(win.eventXML.param3)</description>
+    </rule>
+    
+   <!--DETECTAR EJECUCION-->
+   <rule id="101351" level="14">
+    <if_sid>101101</if_sid>
+    <field name="win.eventdata.commandLine">.exe|.bat|.vbs|.dll|.cmd|.ps1|.js|.jse|.msi|.com|.msi|.jar|.pif|.scr</field>
+    <field name="win.eventdata.currentDirectory" type="pcre2" negate="yes">C:\\\\Windows\\\\SysWOW64|C:\\\\Windows\\\\System32</field>
+    <field name="win.eventdata.parentCommandLine">\.+</field>
+    <field name="win.eventdata.parentImage">C:\\\\Windows\\\\System32\\\\explorer.exe</field>
+    <field name="win.eventdata.originalFileName">.exe|.bat|.vbs|.dll|.cmd|.ps1|.js|.jse|.msi|.com|.msi|.jar|.pif|.scr</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">^C:\\\\Windows\\\\System32\\\\notepad.exe$</field>
+    <description>Se ejecutó:$(win.eventdata.commandLine) por $(win.eventdata.parentUser) manualmente. </description>
+  </rule>
+  <!--detectar creacion de .bat etc-->
+  <rule id="101352" level="14">
+    <if_sid>92200</if_sid>
+    <field name="win.eventdata.targetFileName">.exe|.bat|.vbs|.dll|.cmd|.ps1|.js|.jse|.msi|.com|.msi|.jar|.pif|.scr</field>
+    <field name="win.eventd ata.user" type="pcre2" negate="yes">C:\\\\Windows\\\\SysWOW64|C:\\\\Windows\\\\System32|NT AUTHORITY\\\\SYSTEM</field>
+    <description>ATENCIÓN. Ejecutable creado. Imagen principal: $(win.eventdata.image). Archivo Original: $(win.eventdata.targetFileName)</description>
+  </rule>
+  
+  <rule id="101353" level="14">
+    <if_sid>101101</if_sid>
+    <field name="win.eventdata.commandLine">.exe|.bat|.vbs|.dll|.cmd|.ps1|.js|.jse|.msi|.com|.msi|.jar|.pif|.scr</field>
+    <field name="win.eventdata.currentDirectory" type="pcre2" negate="yes">C:\\\\Windows\\\\SysWOW64|C:\\\\Windows\\\\System32</field>
+    <field name="win.eventdata.parentCommandLine">\.+</field>
+    <field name="win.eventdata.image">C:\\\\Windows\\\\System32\\\\cscript.exe|C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe</field>
+    <field name="win.eventdata.originalFileName">.exe|.bat|.vbs|.dll|.cmd|.ps1|.js|.jse|.msi|.com|.msi|.jar|.pif|.scr</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">^C:\\\\Windows\\\\System32\\\\notepad.exe$</field>
+    <description>Se ejecutó:$(win.eventdata.commandLine) por $(win.eventdata.parentUser) mediante consola. </description>
+  </rule>
+  <!--La regla 101348 del eventID 261: La escucha RDP-Tcp recibió una conexión
+  100 intentos de conexion en 60 segundos-->
+  <rule id="101354" level="15" frequency="100" timeframe="60">
+    <if_matched_sid>101348</if_matched_sid>
+    <same_field>win.system.eventID</same_field>
+    <description>ATENCION. La escucha Tcp-Rdp recibió una cantidad inusual de paquetes de conexión al puerto 3389 (100 intentos de conexion en 60 segundos) Posible escaneo </description>
+  </rule>
+  Instalacion de FTK
+  <rule id="101355" level="14">
+    <if_sid>101101</if_sid>
+    <field name="win.eventdata.originalFileName">msiexec.exe$</field>
+    <field name="win.eventdata.parentImage">AccessData FTK Imager \.+.exe$</field>
+    <description>ATENCIÓN. Creación de proceso, msiexec.exe inició el proceso de instalción de AccessData FTK Imager</description>
+  </rule>
+  <!--Iniciar DumpIt.exe-->
+ <rule id="101356" level="14">
+    <if_sid>101101</if_sid>
+    <match>MD5=84F0FEB07BEAE896D471F45527D781B0,SHA256=7850850434059ADB8354629E2D1102A8FCC7BE8B606EDBB4BBB22A1060BAEC26,IMPHASH=43113498B8B20F2C980E4C01B8A5839D</match>
+    <description>ATENCIÓN. DumpIt.exe ha sido ejecutado en el sistema</description>
+ </rule>
+ <!--regla original en 0800-sysmon_id_1, a esta regla solo le hago un cambio, level=3 a level=14 hasta exluir o intentificar los procesos normales y luego exluirlos-->
+ <!--Esta regla genera una alerta cuando se utiliza el binario net.exe desde cmd (if_sid 92032 indica a cmd.exe como origen), lo que se debe tener en cuenta es el directorio de origen de dicho proceso, normalmente son pocos y tienen que ver con los procesos automáticos aparentemente en el caso de wazuh, ya que se observan varios eventos net stop Wazuh y net start Wazuh desde el directorio ossec, lo normal seria ver a este proceso desde el directorio System32 como origen y es ahi donde se tiene que tener especial atención.
+ En el caso de un descubrimiento a través de un command and control, el directorio de origen de net.exe no será el directorio System32-->
+  <rule id="92036" level="14" overwrite="yes">
+    <if_sid>92032</if_sid>
+    <field name="win.eventdata.originalFileName" type="pcre2">(?i)(SystemPropertiesAdvanced|net)\.EXE</field>
+    <options>no_full_log</options>
+    <description>A $(win.eventdata.image) binary was started by a Windows cmd shell</description>
+    <mitre>
+      <id>T1059.003</id>
+      <id>T1574.001</id>
+    </mitre>
+  </rule>
+ <!--activar luego del evento-->
+ <!--Siguiendo con el proceso anterior, si el binario net.exe es llamado desde otro directorio que no sean los normales como los que hasta el momento se tienen identificados como ser:-->
+ <!--net stop/start Wazuh desde el directorio de Wazuh y net stop/start PandoraAgent desde System32, se generará la siguiente alerta-->
+ <rule id="101357" level="14">
+    <if_sid>92036</if_sid>
+    <field name="win.eventdata.currentDirectory" type="pcre2" negate="yes">(?i)[c-z]:\\\\Program Files (x86)\\\\ossec-agent$|C:\\\\Windows\\\\system32$</field>
+    <field name="win.eventdata.commandLine">net\s+start\s+PandoraFMSAgent|net\s+stop\s+PandoraFMSAgent</field>
+    <description>ATENCIÓN. $(win.eventdata.commandLine) ejecutado desde $(win.eventdata.currentDirectory) a través de cmd.exe</description>
+ </rule>
+ <!--Ejecucion de FTK detectado por hash-->
+ <!--SHA1=1EC9F63A927E5F28B65E07AA786ED135D5D8ECFF,MD5=F6D2C8F47461E589410A17C097C29385,SHA256=15F8AD6C3C3D15B2709F913B3B19573511CA197238F6D28245684457DDA7D858,IMPHASH=FA214149475FC03E22E999BC204CD0B5-->
+ <rule id="101358" level="15">
+    <if_sid>101101</if_sid>
+    <match>SHA1=1EC9F63A927E5F28B65E07AA786ED135D5D8ECFF,MD5=F6D2C8F47461E589410A17C097C29385,SHA256=15F8AD6C3C3D15B2709F913B3B19573511CA197238F6D28245684457DDA7D858,IMPHASH=FA214149475FC03E22E999BC204CD0B5</match>
+    <description>ATENCIÓN. FTK Imager AccessData se ha ejecutado en el sistema</description>
+ </rule>
+ Creacion de proceso Sysmon, cuando actualiza la configuracion se genera un evento de creacion de proceso como imagen solicitada a Sysmon64.exe
+ <rule id="101359" level="15">
+    <if_sid>101101</if_sid>
+    <field name="win.eventdata.image">C:\\\\Windows\\\\Sysmon64.exe</field>
+    <field name="win.eventdata.parentImage">\.+</field>
+    <description>Sysmon ejecutado en el sistema</description>
+ </rule>
+ Si la linea de comandos tiene -c o -u como argumentos
+ <rule id="101360" level="15">
+    <if_sid>101359</if_sid>
+    <field name="win.eventdata.commandLine" type="pcre2">-c|-u|-u force</field>
+    <field name="win.eventdata.parentImage">\.+</field>
+    <description>ATENCIÓN. $(win.eventdata.commandLine) ejecutado en el sistema</description>
+ </rule>
+ 
+ 
+
+ 
+  ****************************************************** EVENT ID 2 - A process changed a file creation time ********************************
+    101500
+     <!--Sysmon - Event 2: A process changed a file creation time. Tambien detecta el cambio de tiempo de creacion de un archivo, en este caso tambien al ejecutarse el instalador son generados casi al mismo tiempo estos primeros dos eventos
+  En image estaba Exolorer.EXE pero como no se si este evento puede producirse bajo otro proceso lo dejo sin la condición-->
+   <rule id="101500" level="14">
+    <if_sid>101102</if_sid>
+    <field name="win.eventdata.targetFilename">AccessData FTK Imager \.+.exe$</field>
+    <field name="win.eventdata.image">\.+</field>
+    <description>ATENCIÓN. Un proceso cambió la fecha de creación de AccessData FTK Imager</description>
+  </rule>
+ 
+  <!--///////////////////****************************************************** EVENT ID 3 - network connection ****************************************************///////////////////////////////////-->
+   
+    Si una reverse shell se realiza a traves de netcat, esta regla detecta ese comportamiento 
+    F5FltSrv.exe funciona como un filtro de red que se instala en el kernel de Windows de forma nativa por lo que se excluye este proceso. Este proceso permite interceptar y procesar todo el tráfico de red que pasa por el equipo. El servicio utiliza una serie de reglas y políticas para determinar cómo se debe gestionar el tráfico.
+    Capturar todas las conexiones de red en esta regla (101500) con un mensaje mas descriptivo sobre la imagen/proceso que genera la conexion y el puerto de destino
+    Hay que registrar desde sysmon las actividades en determinados puertos y aca filtrar o tomar todos los registros
+    <rule id="101600" level="14">
+        <if_sid>101103</if_sid>
+        <!--<field name="win.eventdata.destinationPort" type="pcre2">[1-65535]</field>-->
+        <field name="win.eventdata.image" type="pcre2" negate="yes">C:\\\\Windows\\\\SysWOW64\\\\F5FltSrv.exe$</field>
+        <description>Conexion de red establecida por $(win.eventdata.image) a través del puerto $(win.eventdata.destinationPort)</description>
+    </rule>
+  
+    Para el puerto 3389, ya existe la regla default que detecta éstas conexiones (paquetes enviados al puerto 3389), hacer exlusiones a partir de esta regla en cuanto a las ips legitimas, un scan con nmap genera tambien ésta alerta.
+    <rule id="92108" level="10" overwrite="yes">
+    <if_group>sysmon_event3</if_group>
+    <field name="win.eventdata.destinationPort" type="pcre2">3389</field>
+    <options>no_full_log</options>
+    <description>Conexión detectada en el puerto RDP desde $(win.eventdata.sourceIp) hacia $(win.eventdata.destinationIp)</description>
+    <mitre>
+      <id>T1021.001</id>
+    </mitre>
+  </rule>
+  
+      <!--conexiones generadas a puertos comunmente utilizados por herramientas de acceso remoto-puertos o protocolos comunes para tal efecto-->
+    <rule id="101601" level="14">
+        <if_sid>101103</if_sid>
+        <field name="win.eventdata.destinationPort">^22$|^23$|^25$|^5800$|^5900$|^5985$|^5986$</field>
+        <description>Network Connection - SrcPort:$(win.eventdata.destinationPort) puerto comúnmente utilizado por herramientas de acceso remoto, IP origen: $(win.eventdata.sourceIp). Imagen $(win.eventdata.image)</description>
+    </rule>
+    
+    Multiples conexiones, remote services: 40 conexiones en 1 segundo
+    <rule id="101602" level="14" frequency="40" timeframe="1">
+        <if_matched_sid>101601</if_matched_sid>
+        <description>Remote Services - Múltiples conexiones en 1 segundo </description>
+    </rule>
+   
+   <!--///////////////////////////////////*********************** Proceso y C&C *******************************////////////////////////////////////////--> 
+   Si PID de un proceso es igual al PID de otro proceso de conexión de red, caen en esta regla mediante su processID
+    <!--<rule id="101362" level="0">-->
+    <!--    <if_matched_sid>101101</if_matched_sid>-->
+    <!--    <if_sid>101103</if_sid>-->
+    <!--    <same_field>win.eventdata.processId</same_field>-->
+    <!--    <description>Proceso estableció una conexión de red. IP de destino: $(win.eventdata.destinationIp)</description>-->
+    <!--</rule> -->
+    <!--si a partir de esos eventos anteriores se produce un evento 92052 (ejecución anormal de cmd) cae en esta regla y si muestra el numero de proceso de los 3 eventos-->
+    <!--<rule id="101363" level="15">-->
+    <!--    <if_sid>101362,92052</if_sid>-->
+    <!--    <field name="win.eventdata.image" type="pcre2">C:\\\\Windows\\\\System32\\\\cmd\.exe</field>-->
+    <!--    <description>ATENCIÓN. Command and Control de red. PID: $(win.eventdata.parentProcessId)</description>-->
+    <!--</rule>-->
+    <rule id="101603" level="0">
+        <if_matched_sid>101101</if_matched_sid>
+        <if_sid>101103</if_sid>
+        <same_field>win.eventdata.processId</same_field>
+        <description>Proceso estableció una conexión de red. IP de destino: $(win.eventdata.destinationIp)</description>
+    </rule> 
+    si a partir de esos eventos anteriores se produce un evento 92052 (ejecución anormal de cmd) cae en esta regla y si muestra el numero de proceso de los 3 eventos
+    <rule id="101604" level="15">
+        <if_sid>101603,92052</if_sid>
+        <field name="win.eventdata.image" type="pcre2">C:\\\\Windows\\\\System32\\\\cmd\.exe</field>
+        <description>ATENCIÓN. Command and Control de red. PID: $(win.eventdata.parentProcessId)</description>
+    </rule>
+   
+    <rule id="101604" level="15">
+        <if_sid>101603,101303</if_sid>
+        <field name="win.eventdata.image" type="pcre2">C:\\\\Windows\\\\System32\\\\cmd\.exe</field>
+        <field name="win.eventdata.parentImage" type="pcre2" negate="yes">C:\\\\Windows\\\\explorer\.exe</field>
+        <description>ATENCIÓN. Command and Control de red. PID: $(win.eventdata.parentProcessId)</description>
+    </rule>
+  ***************************************************************** EVENT ID 4 Y EVENT ID 5 SON INICIO Y CAMBIO DE CONFIG DE SYSMON*******************************************************
+  ***************************************************************** EVENT ID 6 DRIVER LOADED *********************************************************************************************
+  ******************************************************************  EVENT ID 7 - IMAGE LOADED   ***********************************************************
+  101700 en adelante para este bloque
+  RULE ID 92154
+  La regla genera un evento cuando se carga una imagen utilizando funcionalidades de taskschd.dll que es la libreria dinamica del programador de tareas
+  En esta regla se va sobreescribir solo la descripcion
+   <rule id="92154" level="4" overwrite="yes">
+    <if_group>sysmon_event7</if_group>
+    <field name="win.eventdata.imageLoaded" type="pcre2">(?i)taskschd.dll</field>
+    <options>no_full_log</options>
+    <description>Procesar el módulo taskchd.dll cargado.  Puede usarse para retrasar la ejecución de malware. Imagen: $(win.eventdata.image)</description>
+    <mitre>
+      <id>T1053.005</id>
+    </mitre>
+  </rule>
+   <!--aparentemente al iniciar la copia de memoria RAM, el driver ad_driver.sys es ejecutado. Verificar como hacer match con los hashes que Wazuh obtiene del driver: MD5=3AED842C643DFDBCB2ED9E8E41E289FA,SHA256=9DF6669ED175D41014859C9CD09FD32F52F5E3315C50E614707E86CBD6DFA1B6,IMPHASH=BC5A91CC75B8EEDCB27D34B97C87000A-->
+ <rule id="101700" level="15">
+    <if_sid>101106</if_sid>
+    <field name="win.eventdata.imageLoaded" type="pcre2">ad_driver\.sys$</field>
+    <field name="win.eventdata.signature">AccessData</field>
+    <description>ATENCIÓN. Controlador de disco y memoria AccessData inició un proceso en el sistema</description>
+ </rule>
+ Lo mismo pero detectado con hash, si no está modificado, se generan 2 alertas iguales
+ <rule id="101701" level="15">
+    <if_sid>101106</if_sid>
+    <match>SHA1=29FEF09E8589014E4D0F480208F545B6F814D036,MD5=3AED842C643DFDBCB2ED9E8E41E289FA,SHA256=9DF6669ED175D41014859C9CD09FD32F52F5E3315C50E614707E86CBD6DFA1B6,IMPHASH=BC5A91CC75B8EEDCB27D34B97C87000A</match>
+    <description>ATENCIÓN. Controlador de disco y memoria AccessData inició un proceso en el sistema detectado mediante hash</description>
+ </rule>
+ <!--Para DumpIt.exe, tambien durante el proceso de volcado es ejecutado el driver propio del ejecutable DumpIt.sys-->
+ <!--rule id 101106 Driver Loaded-->
+ <rule id="101702" level="14">
+    <if_sid>101106</if_sid>
+    <match>MD5=4CE020C907C531F9AB9E50956F3182E9,SHA256=BF33CAEE4C0E956CA0503338F191B1907C254D99D6779FE2EE54F5A6C0F838F7,IMPHASH=508C339FFB85BE44A52F63521F29F2CC</match>
+    <description>ATENCIÓN. Driver DumpIt.sys inició un proceso en el sistema.</description>
+ </rule>
+  ****************************************************************** EVENT ID 8 -CREATE REMOTE THREAD ******************************************************************
+  ******************************************************************  EVENT ID 10 - process was accessed by   ***********************************************************
+  101800 en adelante
+  <!-- <rule id="92900" level="12">-->
+  <!--  <if_group>sysmon_event_10</if_group>-->
+  <!--  <field name="win.eventdata.targetImage" type="pcre2">(?i)lsass\.exe</field>-->
+  <!--  <field name="win.eventdata.grantedAccess" type="pcre2">(?i)(0x1010|0x40)</field>-->
+  <!--  <field name="win.eventdata.sourceImage" type="pcre2" negate="yes">(?i)(C:\\\\Program Files|wmiprvse\.exe)</field>-->
+  <!--  <options>no_full_log</options>-->
+  <!--  <description>Lsass process was accessed by $(win.eventdata.sourceImage) with read permissions, possible credential dump</description>-->
+  <!--  <mitre>-->
+  <!--    <id>T1003.001</id>-->
+  <!--  </mitre>-->
+  <!--</rule>-->
+
+  <rule id="92910" level="12" overwrite="yes">
+    <if_sid>61612</if_sid>
+    <field name="win.eventdata.targetImage" type="pcre2">(?i)explorer\.exe</field>
+    <field name="win.eventdata.sourceImage" type="pcre2" negate="yes">C:\\\\Users\\\\controlaudio\\\\AppData\\\\Roaming\\\\Spotify\\\\Spotify\.exe$</field>
+    <options>no_full_log</options>
+    <description>Explorer process was accessed by $(win.eventdata.sourceImage), possible process injection</description>
+    <mitre>
+      <id>T1055</id>
+    </mitre>
+  </rule>
+
+  <!--<rule id="92920" level="14">-->
+  <!--  <if_group>sysmon_event_10</if_group>-->
+  <!--  <field name="win.eventdata.targetImage" type="pcre2">(?i)mstsc\.exe</field>-->
+  <!--  <options>no_full_log</options>-->
+  <!--  <description>Windows Remote Dektop utility process was accessed by $(win.eventdata.sourceImage), possible process injection</description>-->
+  <!--  <mitre>-->
+  <!--    <id>T1055</id>-->
+  <!--  </mitre>-->
+  <!--</rule>-->
+  ******************************************************************* EVENT ID 11 - FILE CREATED  ***********************************************************
+  lastalive0.dat
+  101900
+    <rule id="101900" level="0">
+        <if_sid>101111</if_sid>
+        <field name="win.eventdata.image">^C:\\\\Windows\\\\System32\\\\svchost.exe$</field>
+        <field name="win.eventdata.targetFileName" type="pcre2">C:\\\\Windows\\\\ServiceProfiles\\\\LocalService\\\\AppData\\\\Local\\\\(lastalive0.dat|lastalive1.dat)</field>
+        <description>Este archivo es utilizado para realizar un seguimiento de cuándo fue la última vez que un usuario interactuó con el sistema. Puede ser utilizado por diversas aplicaciones y servicios del sistema para determinar la inactividad del usuario.</description>
+    </rule>
+    
+    Esta regla por defecto solo hace referencia al directorio Temp, endurecer esta regla. Un archivo malicioso puede estar en cualquier directorio
+    <rule id="92213" level="12" overwrite="yes">
+     <!--<if_group>sysmon_event_11</if_group>-->
+     <field name="win.eventdata.targetFilename" type="pcre2">(?i)[c-z]:\\\\Users\\\\.+\\\\AppData\\\\Local\\\\Temp\\\\.+\.(exe|com|dll|vbs|js|bat|cmd|pif|wsh|ps1|msi|vbe)</field>
+     <options>no_full_log</options>
+     <description>Archivo ejecutable colocado en directorio Temp</description>
+     <mitre>
+       <id>T1105</id>
+     </mitre>
+   </rule>
+    
+    Cuando se ejecuta nc.exe en el sistema, windows crea automaticamente su archivo prefetch y eso es lo que se detecta en esta regla, ya que detectarlo solo por el nombre de la imagen no es seguro 
+    C:\\Windows\\Prefetch\\NC.EXE-6CEC22B1.pf
+    101601
+  <rule id="101901" level="15">
+    <if_sid>101111</if_sid>
+    <field name="win.eventdata.targetFilename" type="pcre2">Prefetch\\\\NC.EXE-\.+\.pf$</field>
+    <description>ATENCIÓN. Posible ejecución de nc.exe. Verificar ésta acción</description>
+  </rule>
+  
+  Descarga de archivos desde la web excepto los archivos descargados como parte del backup desde outlook.exe en el servidor autidtoria1 
+   <rule id="101902" level="15">
+    <if_sid>101111</if_sid>
+    <field name="win.eventdata.targetFilename" type="pcre2">Zone\.Identifier$</field>
+    <description>ATENCIÓN. Posible descarga de archivo desde la web. Verificar acción realizada por $(win.eventdata.targetFilename)</description>
+  </rule>
+  
+  <rule id="101903" level="15">
+    <if_sid>101902</if_sid>
+    <field name="win.eventdata.targetFilename" type="pcre2">\.py:Zone\.Identifier$</field>
+    <description>ATENCIÓN. Posible descarga de archivo Python desde la web. Verificar acción realizada por $(win.eventdata.targetFilename)</description>
+  </rule>
+  
+  <!--C:\ProgramData\Microsoft\Windows\Start Menu\Programs-->
+   <rule id="101904" level="15">
+        <if_sid>101111</if_sid>
+        <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)notepad.exe</field>
+        <field name="win.eventdata.targetFilename" type="pcre2">C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\Start Menu\\\\Programs</field>
+        <description>Archivo creado en directorio $(win.eventdata.targetFilename)</description>
+    </rule>
+  archivo temporal colocado por powershell como parte de su funcionamiento normal
+  Los archivos __PSScriptPolicyTest*.ps1/psm1 se utilizan para determinar en qué modo de idioma se ejecutará PowerShell. 
+   <rule id="101905" level="14">
+    <if_sid>92213</if_sid>
+    <field name="win.eventdata.image" type="pcre2">^C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1\.0\\\\powershell\.exe$</field>
+    <field name="win.eventdata.targetFilename" type="pcre2">C:\\\\Users\\\\.+\\\\AppData\\\\Local\\\\Temp\\\\__PSScriptPolicyTest_\S+\.\S+\.ps1$</field>
+    <description>Script temporal de Powershell colocado en el directorio Temp</description>
+  </rule>
+  Archivos colocados en directorio Tasks (directorio predeterminado de las tareas programadas)
+   <rule id="101906" level="15">
+    <if_sid>101111</if_sid>
+    <field name="win.eventdata.targetFilename" type="pcre2">^C:\\\\Windows\\\\System32\\\\Tasks</field>
+    <description>ATENCIÓN. Archivo colocado en directorio Tasks. Posible creación de tarea programada</description>
+   </rule>
+    <!--Volcado de ram (SE GENERA UN .men o .raw-->win.eventdata.image
+	C:\\Program Files (x86)\\AccessData\\FTK Imager\\FTK Imager.exe
+    <rule id="101907" level="15">
+        <if_sid>101111</if_sid>
+        <!--<field name="win.eventdata.image" type="pcre2" negate="yes">(?i)notepad.exe|</field>-->
+        <field name="win.eventdata.image" type="pcre2">FTK Imager\.exe$</field>
+        <field name="win.eventdata.targetFilename" type="pcre2">\.mem$|\.raw$</field>
+        <description>ATENCIÓN. Posible volcado de memoria en $(win.eventdata.targetFileName)</description>
+    </rule>
+    <!--el evento "archivo colocado en una carpeta comunmente utilizada por malware" id 92213 genera el evento cuando a través de Explorer.exe se crea un archivo en este caso en el directorio Tmp
+  Este evento se genera mas que nada al iniciar el instalador de FTK Imager.-->
+  <!--C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\3c78d5d4-b968-44ba-9469-94932d0a0699_AccessData FTK Imager 3-3-0.zip.699\\AccessData FTK Imager 3-3-0.exe-->
+  <rule id="101908" level="14">
+    <if_sid>92213</if_sid>
+    <field name="win.eventdata.targetFilename">AccessData FTK Imager \.+.exe$</field>
+    <field name="win.eventdata.image">Explorer.EXE$</field>
+    <description>ATENCIÓN. Instalación de AccessData FTK Imager detectado</description>
+  </rule>
+ Durante la instalcion FTK va escribiendo archivos temporales en el sistema
+ "File created:
+RuleName: technique_id=T1047, Archivo colocado en directorio Temp
+UtcTime: 2024-04-13 17:08:06.272
+ProcessGuid: {4f94866a-bbf5-661a-9903-000000000a00}
+ProcessId: 6328
+Image: C:\Users\vboxuser\AppData\Local\Temp\accessdata_ftk_imager.exe
+TargetFilename: C:\Users\vboxuser\AppData\Local\Temp\{ECBE28AE-A4C9-4B78-8A9D-B8BC8733BD91}\AccessData FTK Imager.msi
+CreationUtcTime: 2024-04-13 17:08:06.272
+User: DESKTOP-BI00PPK\vboxuser"
+ <rule id="101909" level="14">
+    <if_sid>101111</if_sid>
+    <field name="win.eventdata.image" type="pcre2">Temp\\\\accessdata_ftk_imager.exe$</field>
+    <field name="win.eventdata.targetFilename" type="pcre2">\.+</field>
+    <description>Archivo creado en directorio Temp realizado por FTK Imager AccessData</description>
+  </rule>
+  <!--Sysmon - Event 11: FileCreate: C:\\Users\\Administrator\\Desktop\\capture2\\pagefile.sys-->
+ <rule id="101910" level="15">
+    <if_sid>101111</if_sid>
+    <field name="win.eventdata.image" type="pcre2">FTK Imager.exe$</field>
+    <field name="win.eventdata.targetFilename" type="pcre2" negate="yes">ad_driver\.sys$</field>
+    <description>ATENCIÓN. Posible volcado de memoria. Archivo creado en $(win.eventdata.targetFilename).</description>
+ </rule>
+ 
+ <!--el driver DumpIt.sys es colocado por el ejecutable DumpIt.exe-->
+  <rule id="101911" level="14">
+    <if_sid>101111</if_sid>
+    <field name="win.eventdata.targetFileName">DumpIt.sys$</field>
+    <description>ATENCIÓN. Driver DumpIt.sys ha sido colocado por $(win.eventdata.image)</description>
+  </rule>
+  
+	<!--C:\\$Recycle.Bin\\S-1-5-21-1520267412-361757043-2937636627-1001\\$IETHCR0.mem-->
+	<rule id="101912" level="0">
+	    <if_sid>101907</if_sid>
+	    <field name="win.eventdata.targetFilename" type="pcre2">C:\\\\\$Recycle\.Bin</field>
+	    <description>Archivo borrado</description>
+	</rule>
+	<rule id="101913" level="15">
+	    <if_sid>92213</if_sid>
+	    <field name="win.eventdata.targetFilename" type="pcre2">AccessData\s+FTK\s+Imager\.msi</field>
+	    <description>AccesData msi installer colocado en Temp por $(win.eventdata.image)</description>
+	</rule>
+   <rule id="101916" level="15">
+    <if_sid>101111</if_sid>
+    <field name="win.eventdata.image" type="pcre2">FTK Imager\.exe$</field>
+    <field name="win.eventdata.targetFilename" type="pcre2">ad_driver\.sys$</field>
+    <description>ATENCIÓN. AccessData FTK inició un proceso en el sistema</description>
+ </rule>
+ 
+
+  ******************************************************************* EVENT ID 12 - RegistryEvent (Object create and delete) ******************************************************
+  ClipSVC es un servicio de Windows que proporciona infraestructura de soporte para la Tienda de Microsoft.
+  101700
+  <rule id="102000" level="0">
+        <if_sid>101112</if_sid>
+        <field name="win.eventdata.eventType">CreateKey</field>
+        <field name="win.eventdata.image">^C:\\\\WINDOWS\\\\System32\\\\svchost.exe$</field>
+        <field name="win.eventdata.targetObject">^HKLM\\\\System\\\\CurrentControlSet\\\\Services\\\\ClipSVC</field>
+        <description>Es un servicio de Windows que proporciona infraestructura de soporte para la Tienda de Microsoft.</description>
+    </rule>
+    
+     ---> MITRE ID T1547.004 "Ejecución de inicio automático de inicio o inicio de sesión: DLL auxiliar de Winlogon" 
+    Los adversarios pueden abusar de las funciones de Winlogon para ejecutar archivos DLL y/o archivos ejecutables cuando un usuario inicia sesión. Winlogon.exe es un componente de Windows responsable de las acciones al iniciar/cerrar sesión, así como de la secuencia de atención segura (SAS) activada por Ctrl-Alt-Delete
+    -- Winlogon\Notify: apunta a archivos DLL del paquete de notificación que manejan eventos de Winlogon
+    -- Winlogon\Userinit: apunta a userinit.exe, el programa de inicialización del usuario que se ejecuta cuando un usuario inicia sesión
+    -- Winlogon\Shell: apunta a explorer.exe, el shell del sistema que se ejecuta cuando un usuario inicia sesión 
+  Los adversarios pueden aprovechar estas características para ejecutar repetidamente código malicioso y establecer persistencia. 
+     <rule id="102001" level="15">
+        <if_sid>101112</if_sid>
+        <field name="win.eventdata.targetObject">^HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Winlogon\\\\Userinit$|^HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Winlogon\\\\Shell$|^HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Winlogon\\\\Notify$|^HKEY_LOCAL_MACHINE\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\Winlogon\\\\Shell$|^HKEY_LOCAL_MACHINE\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Winlogon\\\\Notify$|^HKEY_LOCAL_MACHINE\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Winlogon\\\\Userinit$</field>
+        <description>ATENCION. Cambio en el registro de Windows</description>
+        <mitre>
+            <id>T1547.004</id>
+        </mitre>
+      </rule>
+      
+      si el archivo creado en es Chrome.lnk excluir
+      <rule id="102002" level="3">
+        <if_sid>101904</if_sid>
+        <field name="win.eventdata.targetFilename" type="pcre2">C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\Start Menu\\\\Programs\\\\Google Chrome\.lnk$</field>
+        <description>Google Chrome.lnk creado en Start C:\ProgramData\Microsoft\Windows\Start Menu\Programs. Verificar origen de este proceso</description>
+      </rule>
+  ******************************************************************* EVENT ID 13 REGISTRY EVENT **********************************************************************************
+  Para tener un cierto orden para las reglas derivadas de Network connection 101103, se utilizara el id 101800 en adelante
+  W32Time
+  101800
+  <rule id="102100" level="0">
+        <if_sid>101113</if_sid>
+        <field name="win.eventdata.targetObject">HKLM\\\\System\\\\CurrentControlSet\\\\Services\\\\W32Time</field>
+        <description>El servicio de hora de Windows (W32Time) sincroniza la fecha y la hora de todas las computadoras administradas por Active Directory Domain Services (AD DS).</description>
+    </rule>
+    
+   <!--Cambio de MAC Address usando la variable NetworkAddress que reemplaza a OriginalNetworkAddress-->
+   <rule id="102101" level="15">
+        <if_sid>101113</if_sid>
+        <field name="win.eventdata.targetObject" type="pcre2">HKLM\\\\System\\\\CurrentControlSet\\\\Control\\\\Class\\\\{4d36e972-e325-11ce-bfc1-08002be10318}\\\\.+\\\\NetworkAddress</field>
+        <description>ATENCION. Se ha cambiado el registro de las interfaces de red. Posible MAC Spoofing. Verificar: $(win.eventdata.Details)</description>
+    </rule>
+    
+    ---> MITRE ID T1547.004 "Ejecución de inicio automático de inicio o inicio de sesión: DLL auxiliar de Winlogon" 
+    Los adversarios pueden abusar de las funciones de Winlogon para ejecutar archivos DLL y/o archivos ejecutables cuando un usuario inicia sesión. Winlogon.exe es un componente de Windows responsable de las acciones al iniciar/cerrar sesión, así como de la secuencia de atención segura (SAS) activada por Ctrl-Alt-Delete
+    -- Winlogon\Notify: apunta a archivos DLL del paquete de notificación que manejan eventos de Winlogon
+    -- Winlogon\Userinit: apunta a userinit.exe, el programa de inicialización del usuario que se ejecuta cuando un usuario inicia sesión
+    -- Winlogon\Shell: apunta a explorer.exe, el shell del sistema que se ejecuta cuando un usuario inicia sesión 
+  Los adversarios pueden aprovechar estas características para ejecutar repetidamente código malicioso y establecer persistencia. 
+     <rule id="102102" level="15">
+        <if_sid>101113</if_sid>
+        <field name="win.eventdata.targetObject">^HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Winlogon\\\\Userinit$|^HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Winlogon\\\\Shell$|^HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Winlogon\\\\Notify$|^HKEY_LOCAL_MACHINE\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\Winlogon\\\\Shell$|^HKEY_LOCAL_MACHINE\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Winlogon\\\\Notify$|^HKEY_LOCAL_MACHINE\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Winlogon\\\\Userinit$</field>
+        <description>ATENCION. Cambio en el registro de Windows</description>
+        <mitre>
+            <id>T1547.004</id>
+        </mitre>
+      </rule>
+ 
+    Tarea programada detectada en el registro 
+    <rule id="102103" level="12">
+        <if_sid>101112</if_sid>
+        <field name="win.eventdata.targetObject">HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows\s+NT\\\\CurrentVersion\\\\Schedule\\\\TaskCache\\\\Tree</field>
+        <field name="win.eventdata.eventType">CreateKey</field>
+        <description>Clave agregada en el registro de tareas programadas del sistema</description>
+    </rule> 
+    <rule id="102104" level="12">
+        <if_sid>101112</if_sid>
+        <field name="win.eventdata.targetObject">HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows\s+NT\\\\CurrentVersion\\\\Schedule\\\\TaskCache\\\\Tree</field>
+        <field name="win.eventdata.eventType">DeleteKey</field>
+        <description>Clave eliminada del registro de tareas programadas del sistema</description>
+    </rule> 
+    Accion de la tarea
+    <rule id="102105" level="12">
+        <if_sid>101113</if_sid>
+        <field name="win.eventdata.targetObject" type="pcre2">HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows\s+NT\\\\CurrentVersion\\\\Schedule\\\\TaskCache\\\\Tasks\\\\.+\\\\Actions</field>
+        <description>Sysmon - Event 13: Actions-RegistryEvent. Objeto: $(win.eventdata.targetObject)</description>
+    </rule>   
+       <!--Habilitar registro de esta clave en sysmon-->
+       <!--Sobre las alertas generadas por FTK imager y cambios en el registro de windows-->
+ <rule id="102106" level="14">
+    <if_sid>101113</if_sid>
+    <field name="win.eventdata.targetObject">HKLM\\\\System\\\\CurrentControlSet\\\\Services\\\\ad_driver</field>
+    <description>ATENCIÓN. Cambio en la clave del registro de Windows realizado por AccessData FTK Imager. Registro:$(win.eventdata.targetObject)</description>
+ </rule>
+ <!-- MAC spoofing -->
+  <!--Agregar registro en sysmon-->
+    <rule id="104048" level="14">
+        <if_sid>101113</if_sid>
+        <field name="win.eventdata.targetObject" type="pcre2">HKLM\\\\System\\\\CurrentControlSet\\\\Control\\\\Class\\\\{4d36e972-e325-11ce-bfc1-08002be10318}\\\\.+\\\\NetworkAddress</field>
+        <description>ATENCION. Se ha cambiado el registro de las interfaces de red. Posible Spoofing</description>
+    </rule>
+    
+<!--<rule id="101363" level="15">-->
+<!--    <if_matched_group>101303,101362,101312</if_matched_group>-->
+<!--    <field name="win.eventdata.parentProcessId" type="pcre2">^SAME(\.processId)$</field>-->
+<!--    <field name="win.eventdata.image" type="pcre2">C:\\\\Windows\\\\System32\\\\cmd\.exe</field>-->
+<!--    <description>ATENCIÓN. Se ejecutó un comando de sistema operativo a través de la red.</description>-->
+<!--</rule>-->
+
+     
+</group>
+  
+       
+    
+    
+    
+
+ 
+ 
+ 
+ <!--Comentario de prueba-->

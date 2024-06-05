@@ -1,0 +1,533 @@
+
+<!--MS_FREQ es la variable global que se utiliza como referencia para la frecuencia en determinados procesos-->
+<group name="security_event, windows,">
+
+  <!-- This rule detects when PsExec is launched remotely to perform lateral movement within the domain. The rule uses Sysmon events collected from the domain controller. -->
+  <rule id="110004" level="12">
+    <if_sid>61600</if_sid>
+    <field name="win.system.eventID" type="pcre2">17|18</field>
+    <field name="win.eventdata.PipeName" type="pcre2">\\PSEXESVC</field>
+    <options>no_full_log</options>
+    <description>PsExec service launched for possible lateral movement within the domain</description>
+  </rule>
+
+  <!-- This rule detects NTDS.dit file extraction using a sysmon event captured on the domain controller -->
+  <rule id="110006" level="12">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.commandLine" type="pcre2">NTDSUTIL</field>
+    <description>Possible NTDS.dit file extraction using ntdsutil.exe</description>
+  </rule>
+  
+  <!--/////////////////////////////////////////********Regla de Pass the Hash mediante Logon Type 9, EventID 4624********************//////////////////////////////////////-->
+  <rule id="110007" level="15">
+    <if_sid>60103</if_sid>
+    <field name="win.system.eventID">^4624$</field>
+    <field name="win.eventdata.LogonProcessName" type="pcre2">seclogo</field>
+    <field name="win.eventdata.LogonType" type="pcre2">9</field>
+    <field name="win.eventdata.AuthenticationPackageName" type="pcre2">Negotiate</field>
+    <field name="win.eventdata.LogonGuid" type="pcre2">{00000000-0000-0000-0000-000000000000}</field>
+    <options>no_full_log</options>
+    <description>ATENCION. Posible ataque Pass the Hash. Sesión iniciada con credenciales alternativas.</description>
+  </rule>
+  
+  <!--/////////////////////////////////////////********Reglas de extracción de credenciales********************//////////////////////////////////////-->
+  
+  <rule id="110008" level="15">
+    <if_sid>61612</if_sid>
+    <field name="win.eventdata.sourceImage" type="pcre2" negate="yes">^C:\\\\Windows\\\\System32\\\\perfmon.exe$</field>
+    <field name="win.eventdata.TargetImage" type="pcre2">(?i)\\\\system32\\\\lsass.exe</field>
+    <field name="win.eventdata.GrantedAccess" type="pcre2">(?i)0x1010</field>
+    <field name="win.eventdata.sourceUser" type="pcre2" negate="yes">NT AUTHORITY\\\\SYSTEM$</field>
+    <description>ATENCION. Se ha detectado el volcado satisfactorio de lsass.exe. Posible extracción de credenciales.</description>
+  </rule>  
+  
+ ///////////////////////////////////////////////////// REGLAS A PARTIR DE 102000 /////////CAMBIAR IDS, EN sysmon.rules ya se usan ids 102000 en el evento 12 y 13////////////////////////////
+ 102001
+<rule id="110009" level="15">
+    <if_sid>60103</if_sid>
+    <field name="win.system.eventID">^4624$</field>
+    <field name="win.eventdata.LogonProcessName" type="pcre2">seclogon</field>
+    <field name="win.eventdata.LogonType" type="pcre2">9</field>
+    <field name="win.eventdata.AuthenticationPackageName" type="pcre2">Negotiate</field>
+    <field name="win.eventdata.LogonGuid" type="pcre2">{00000000-0000-0000-0000-000000000000}</field>
+    <options>no_full_log</options>
+    <description>ATENCION. Posible ataque Pass the Hash. Sesión iniciada con credenciales alternativas.</description>
+  </rule>
+  102053
+  <rule id="110010" level="15">
+    <if_sid>60103</if_sid>
+    <field name="win.system.eventID">^4698$</field>
+    <!--<field name="win.eventdata.fQDN" type="pcre2" negate="yes">^win10$</field>-->
+    <!--<field name="win.eventdata.subjectUserName" type="pcre2" negate="yes">^WIN10\$$</field>-->
+    <description>ATENCIÓN. Se creó una tarea programada en el sistema</description>
+  </rule>
+  102054
+  <rule id="110011" level="0">
+    <if_sid>61138</if_sid>
+    <field name="win.eventdata.imagePath">SystemRoot\\\\system32\\\\DRIVERS\\\\WUDFRd.sys$</field>
+    <description>Servicio: $(win.eventdata.serviceName). Driver: WUDFRd.sys(Windows User-mode Driver Framework Reflector driver), controlador del marco de trabajo de Windows para dispositivos portátiles.</description>
+  </rule>
+  102055
+  <rule id="110012" level="0">
+    <if_sid>61138</if_sid>
+    <field name="win.eventdata.imagePath" type="pcre2">(?i)[c-z]:\\\\ProgramData\\\\Microsoft\\\\Windows Defender\\\\Definition Updates\\\\.+\\\\MpKslDrv.sys$</field>
+    <description>Servicio: $(win.eventdata.serviceName). Driver: MpKslDrv.sys, Windows Defender inicia este servicio según las necesidades de actualización de definiciones.</description>
+  </rule>
+  102056
+  <rule id="110013" level="0">
+    <if_sid>61138</if_sid>
+    <field name="win.eventdata.imagePath">SystemRoot\\\\System32\\\\drivers\\\\DBUtilDrv2.sys$</field>
+    <description>Servicio: $(win.eventdata.serviceName) Driver: DELL DBUtilDrv2.sys</description>
+  </rule>
+  102057
+  <rule id="110014" level="0">
+    <if_sid>61138</if_sid>
+    <field name="win.eventdata.imagePath">SystemRoot\\\\System32\\\\drivers\\\\hpsysinfo.sys$</field>
+    <description>Servicio: $(win.eventdata.serviceName). Driver: hpsysinfo.sys, se utiliza para acceder a la información del sistema y proporcionar datos precisos sobre el hardware y el software en computadoras HP.</description>
+  </rule>
+  102058
+  <rule id="110015" level="0">
+    <if_sid>61138</if_sid>
+    <field name="win.eventdata.imagePath">C:\\\\windows\\\\system32\\\\Drivers\\\\BrHostDrv.sys$</field>
+    <description>Servicio: $(win.eventdata.serviceName) Driver: BrHostDrv.sys, permite que las aplicaciones y el sistema operativo interactúen con los dispositivos Brother para imprimir documentos y realizar otras funciones relacionadas con la impresión y el escaneo.</description>
+  </rule>
+  102059
+  <rule id="110016" level="0">
+    <if_sid>61138</if_sid>
+    <field name="win.eventdata.imagePath">C:\\\\Program Files\\\\Dell\\\\SARemediation\\\\plugin\\\\BioNTDrv_WINK.SYS</field>
+    <description>Servicio: $(win.eventdata.serviceName). Driver: BioNTDrv_WINK.SYS del software Paragon</description>
+  </rule>
+  102060
+  <rule id="110017" level="0">
+    <if_sid>61138</if_sid>
+    <field name="win.eventdata.imagePath">C:\\\\Program Files (x86)\\\\Hewlett-Packard\\\\HP Support Framework\\\\Resources\\\\HPActiveHealth\\\\ActiveHealth.sys$</field>
+    <description>Servicio: $(win.eventdata.serviceName). Driver: ActiveHealth.sys de HP Support Framework, ayuda a identificar y solucionar problemas de hardware y salud del sistema en dispositivos HP.</description>
+  </rule>
+  102061
+  <rule id="110018" level="0">
+    <if_sid>61138</if_sid>
+    <field name="win.eventdata.imagePath">C:\\\\Program Files\\\\Dell\\\\DellDataVault\\\\DDVCollectorSvcApi.exe</field>
+    <description>Servicio: $(win.eventdata.serviceName) Driver: DDVCollectorSvcApi.exe, diseñado para recopilar y almacenar varios tipos de información del sistema. Estos datos se pueden utilizar para diagnósticos del sistema, resolución de problemas y optimización del rendimiento</description>
+  </rule>
+  102062
+  <rule id="110019" level="0">
+    <if_sid>61138</if_sid>
+    <field name="win.eventdata.imagePath">program files\\\\dell\\\\supportassistagent\\\\pcd\\\\supportassist\\\\pcdsrvc_x64.pkms$</field>
+    <description>Proceso de confianza, DELL</description>
+  </rule>
+  102063
+  <rule id="110020" level="0">
+    <if_sid>61138</if_sid>
+    <field name="win.eventdata.imagePath">system32\\\\DRIVERS\\\\gemma.sys$</field>
+    <field name="win.evendata.serviceName">^Gemma$</field>
+    <description>Servicio: $(win.eventdata.serviceName). Driver: gemma.sys.   BitDefender® AntiVirus, Mitigación genérica de exploits de BitDefender para el minifiltro del sistema de archivos de aplicaciones convencionales </description>
+  </rule>
+  102064
+  <rule id="110021" level="0">
+    <if_sid>61138</if_sid>
+    <field name="win.eventdata.imagePath">system32\\\\DRIVERS\\\\atc.sys$</field>
+    <field name="win.eventdata.serviceName">^atc$</field>
+    <description>ATC es un componente crucial de Bitdefender ATC, que proporciona protección en tiempo real contra malware. Sin este archivo, es posible que Bitdefender ATC no funcione correctamente, dejando su sistema vulnerable a varios tipos de malware.</description>
+  </rule>
+  102065
+  <rule id="110022" level="0">
+    <if_sid>61138</if_sid>
+    <field name="win.eventdata.imagePath">system32\\\\DRIVERS\\\\vlflt.sys$</field>
+    <field name="win.eventdata.serviceName">^vlflt</field>
+    <description>Controlador de filtro vlflt. Es parte de Bitdefender</description>
+  </rule>
+  102066
+  <rule id="110023" level="0">
+    <if_sid>61138</if_sid>
+    <field name="win.eventdata.imagePath">C:\\\\Program Files\\\\HP\\\\HP Enabling Services\\\\DiagsCap.exe</field>
+    <description>Servicio: $(win.eventdata.serviceName).  HP Diagnostics HSA Service es parte del software de diagnóstico de HP y se inicia automáticamente al encender la computadora</description>
+  </rule>
+  102067
+  <rule id="110024" level="0">
+    <if_sid>61138</if_sid>
+    <field name="win.eventdata.imagePath">C:\\\\Program Files\\\\HP\\\\HP Enabling Services\\\\NetworkCap.exe</field>
+    <description>Servicio: $(win.eventdata.serviceName).  NetworkCap.exe es un proceso que pertenece al servicio HP Network HSA, que es un componente de software que permite que los dispositivos HP se comuniquen entre sí y con otros dispositivos en la red
+    </description>
+  </rule>
+  102068
+  <rule id="110025" level="0">
+    <if_sid>61138</if_sid>
+    <field name="win.eventdata.imagePath">C:\\\\Program Files\\\\HP\\\\HP Enabling Services\\\\SysInfoCap.exe</field>
+    <description>Servicio: $(win.eventdata.serviceName).  Servicio HP System Info HSA, es un proceso que pertenece al software SysInfoCap de HP.  Proporciona información como el nombre del producto, número de serie, BIOS, ID de la placa base, etc.</description>
+  </rule>
+  102069
+    <rule id="110026" level="0">
+    <if_sid>61138</if_sid>
+    <field name="win.eventdata.imagePath">C:\\\\Program Files\\\\HP\\\\HP Enabling Services\\\\AppHelperCap.exe</field>
+    <description>Servicio: $(win.eventdata.serviceName).  El software HP App Helper HSA está diseñado para ayudar con el funcionamiento de las aplicaciones HP. Proporciona soporte y funcionalidad adicional a estas aplicaciones, ayudándolas a funcionar sin problemas y de manera eficiente. Esto puede incluir tareas como administrar actualizaciones, solucionar problemas y proporcionar funciones adicionales.  
+  </description>
+  </rule>
+  102070
+  <rule id="110027" level="0">
+    <if_sid>61138</if_sid>
+    <field name="win.eventdata.imagePath">C:\\\\Program Files (x86)\\\\DENSO CORPORATION\\\\DENSO ScanTool Agent\\\\RunContSvc.exe</field>
+    <field name="win.eventdata.serviceName">^RunContService$</field>
+    <description>Servicio: $(win.eventdata.serviceName). Equipo de diagnóstico para taller. Herramienta interactiva de diagnóstico de información y comunicación de DENSO (DENSO-C)</description>
+  </rule>
+  
+  
+  60104 (EventID 4656)informa mediante la auditoria a objetos cuando se intenta acceder a un objeto sin exito, en este caso el objeto es el servicio de Wazuh
+  Comando en Powershell Stop-Service -Name "Wazuh"
+  102071
+  <rule id="110028" level="15">
+    <if_sid>60104</if_sid>
+    <field name="win.eventdata.objectName">^WazuhSvc$</field>
+    <field name="win.eventdata.objectServer">^SC Manager$</field>
+    <description>ATENCIÓN. Se intentó acceder al servicio $(win.eventdata.objectName)</description>
+  </rule>
+  
+                    <!--*************************************Cuenta de usuario cambiada ********************************************************-->
+  <!--derivacion de 60103(audit success) - comparacion de rule id 60110 user account changed, 
+  Esta regla tampoco existía como tal, los eventos 624 y 4720 indican lo sigte:
+  SAM locales
+Todos los grupos son grupos de seguridad en el SAM de la computadora. A los grupos SAM locales solo se les puede otorgar acceso a objetos en la computadora local, pero pueden tener miembros del SAM local y de cualquier dominio confiable.
+ -->
+ 102072
+  <rule id="110029" level="15">
+    <if_sid>60109,60110</if_sid>
+    <field name="win.system.eventID">^624$|^4720$</field>
+    <description>Se creó una cuenta de usuario. $(win.eventdata.subjectUserName) creó la cuenta SAM: $(win.eventdata.samAccountName) </description>
+  </rule>
+  
+   <!--derivacion de 60103(audit success) Si event id=626 o event id=4722 : Se habilitó una cuenta-->
+ 102073
+  <rule id="110030" level="15">
+    <if_sid>60110</if_sid>
+    <field name="win.system.eventID">^626$|^4722$</field>
+    <field name="win.eventdata.subjectUserName">\.+</field>
+    <field name="win.eventdata.targetUserName">\.+</field>
+    <description>$(win.eventdata.subjectUserName) habilitó la cuenta $(win.eventdata.targetUserName)</description>
+  </rule>
+  
+  <!--Cambio de contraseñas-->
+  102074
+  <rule id="110031" level="15">
+    <if_sid>60110</if_sid>
+    <field name="win.system.eventID">^628$|^4724$</field>
+    <field name="win.eventdata.targetUsername" type="pcre2" negate="yes">^HealthMailbox</field>
+    <description>Se cambió la contraseña de un usuario. </description>
+    <description>$(win.eventdata.subjectUserName) ha cambiado la contraseña de $(win.eventdata.targetUsername)</description>
+  </rule>
+  
+  <!--Si los cambios de contraseñas NO son realizados por los usuarios responsables de tal proceso-->
+  Identificar responsables del proceso y diferenciar alerta
+  102075
+  <rule id="110031" level="15">
+    <if_sid>110031</if_sid>
+    <field name="win.eventdata.subjectUserName" type="pcre2" negate="yes">\.</field>
+    <description>ATENCIÓN. Cambio de contraseña de usuario $(win.eventdata.targetUserName) realizado por $(win.eventdata.subjectUserName)</description>
+  </rule>
+  
+   <!--CAMBIO DE PASSWORD ADMINISTRADORES-->
+   <!-- default -->
+   Identificar administradores
+   102076
+  <rule id="110032" level="15">
+    <if_sid>110029</if_sid>
+    <field name="win.eventdata.subjectUserName">\.+</field>
+    <field name="win.eventdata.targetUserName">Admin</field>
+    <description>ATENCIÓN. SE CAMBIÓ LA CONTRASEÑA DE UN USUARIO ADMINISTRADOR. $(win.eventdata.subjectUserName) ha cambiado la contraseña de $(win.eventdata.targetUsername)</description>
+  </rule>
+  102077
+   <rule id="110033" level="15">
+    <if_sid>110029</if_sid>
+    <description>ATENCIÓN. $(win.eventdata.subjectUserName) creó la cuenta SAM: $(win.eventdata.samAccountName) </description>
+  </rule>
+  
+   AUTENTICAIONES, ERRORES
+   La regla 60122 informa los errores de autenticación durante un inicio de sesión a través del evento 4625
+   Teniendo en cuenta esto, generar una alerta para una cantidad poco común de estos eventos del mismo user por un lado, y crear otra regla alertando sobre el error de autenticación dos o mas veces de     un user Administrador
+  
+  Autenticaciones fallidas usuario no Admin, 6 errores en menos de 3 minutos
+  102078
+  <rule id="110034" level="14" frequency="8" timeframe="180">
+    <if_matched_sid>60122</if_matched_sid>
+    <same_field>win.eventdata.targetUserName</same_field>
+    <field name="win.eventdata.targetUserName" type="pcre2" negate="yes">^Administrador$|^Administrator$|^Admin$</field>
+    <description>Varios intentos de autenticacón sin éxito de User $(win.eventdata.targetUserName)</description>
+  </rule>
+  Autenticaciones fallidas user Administrador
+  102079
+  <rule id="110035" level="15" frequency="8" timeframe="30">
+    <if_matched_sid>60122</if_matched_sid>
+    <field name="win.eventdata.targetUserName">^Administrador$|^Administrator$|^Admin$</field>
+    <description>Errores de autenticación de usuario $(win.eventdata.targetUserName)</description>
+  </rule>
+
+ <!--/////////////////////////////////////////////////////***************************AUTENTICACIONES DE RED********************////////////////////////////////////////////////////////////////////-->
+ Viene de una alerta de error de login, identificar y volver a implementar esto, las demas reglas debajo dependen de este
+ <!--102080, no se a cual pertenecia la 102031-->
+ <!-- <rule id="110036" level="0">-->
+ <!--   <if_sid>102031</if_sid>-->
+ <!--   <field name="win.system.eventID">^4776$</field>-->
+ <!--   <description>Error en la autenticación a través de la red de usuario $(win.eventdata.targetUserName) desde estación $(win.eventdata.workstation)</description>-->
+ <!-- </rule>-->
+  
+  <!--alerta generada en AD cuando un usuario intenta conectarse por rdp-->
+  <!--<rule id="102081" level="3">-->
+  <!--  <if_sid>102080</if_sid>-->
+  <!--  <field name="win.eventdata.status">^0xc0000064$</field>-->
+  <!--  <description>Fallo de autenticación. Nombre de usuario incorrecto o no existe. Estación:$(win.eventdata.workstation)</description>-->
+  <!--</rule>-->
+  
+  <!--alerta generada en AD cuando un usuario intenta conectarse por rdp-->
+  <!--<rule id="102082" level="3">-->
+  <!--  <if_sid>102080</if_sid>-->
+  <!--  <field name="win.eventdata.status">^0xc000006a$</field>-->
+  <!--  <description>Fallo de autenticación. Nombre de usuario es correcto pero la contraseña es incorrecta. Estación:$(win.eventdata.workstation)</description>-->
+  <!--</rule>-->
+  
+  <!--<rule id="102083" level="15">-->
+  <!--  <if_sid>102080</if_sid>-->
+  <!--  <field name="win.eventdata.status">^0xC0000070$</field>-->
+  <!--  <description>Inicio de sesión de cuenta desde una estación de trabajo no autorizada.</description>-->
+  <!--</rule>-->
+  
+  <!--<rule id="102084" level="3">-->
+  <!--  <if_sid>102080</if_sid>-->
+  <!--  <field name="win.eventdata.status">^0xc0000071$</field>-->
+  <!--  <description>El equipo intentó validar las credenciales con una contraseña expirada.</description>-->
+  <!--</rule>-->
+  
+  <!--Inicio de sesión de usuario en la cuenta deshabilitada por el administrador	Por ejemplo, N eventos en los últimos N minutos pueden ser un indicador de un intento de compromiso de cuenta, especialmente relevante para las cuentas altamente críticas.-->
+  <!--En algunos casos, un sistema puede intentar realizar la autenticación automáticamente, por ejemplo, al intentar acceder a recursos compartidos de red o servicios antes de que un usuario inicie sesión de manera interactiva. En estos casos, también se verificará el estado de la cuenta antes de permitir el acceso. -->
+  <!--<rule id="102085" level="15">-->
+  <!--  <if_sid>102080</if_sid>-->
+  <!--  <field name="win.eventdata.status">^0xc0000072$</field>-->
+  <!--  <field name="win.eventdata.targetUserName" type="pcre2" negate="yes">^lzazzi$</field>-->
+  <!--  <description>El controlador de dominio intentó validar las credenciales de una cuenta deshabilitada</description>-->
+  <!--</rule>-->
+
+  <!--<rule id="102086" level="3">-->
+  <!--  <if_sid>102080</if_sid>-->
+  <!--  <field name="win.eventdata.status">^0xC0000193$</field>-->
+  <!--  <description>Inicio de sesión de la cuenta con una cuenta expirada.</description>-->
+  <!--</rule>-->
+  
+  <!--<rule id="102087" level="3">-->
+  <!--  <if_sid>102080</if_sid>-->
+  <!--  <field name="win.eventdata.status">^0xC0000224$</field>-->
+  <!--  <description>Inicio de sesión de la cuenta con la marca "Cambiar contraseña en el siguiente inicio de sesión".</description>-->
+  <!--</rule>-->
+  
+  <!-- <rule id="102088" level="15">-->
+  <!--  <if_sid>102080</if_sid>-->
+  <!--  <field name="win.eventdata.status">^0xC0000234$</field>-->
+  <!--  <description>Inicio de sesión de la cuenta con la cuenta bloqueada.</description>-->
+  <!--</rule>-->
+  
+  <!--<rule id="102089" level="3">-->
+  <!--  <if_sid>102080</if_sid>-->
+  <!--  <field name="win.eventdata.status">^0xC0000371$</field>-->
+  <!--  <description>El almacén de cuentas local no contiene material secreto para la cuenta especificada.</description>-->
+  <!--</rule>-->
+  <!--<rule id="102090" level="15">-->
+  <!--  <if_sid>102080</if_sid>-->
+  <!--  <field name="win.eventdata.status">^0xC000006F$</field>-->
+  <!--  <description>Inicio de sesión de la cuenta fuera del horario autorizado.</description>-->
+  <!--</rule>-->
+  <!--<rule id="102091" level="3">-->
+  <!--  <if_sid>102080</if_sid>-->
+  <!--  <field name="win.eventdata.status">^0x0$</field>-->
+  <!--  <description>Autenticacion NTLM sin errores</description>-->
+  <!--</rule>-->
+  
+  <!--////////////////////////////////////////////////////////////////*************************** NESSUS *****************************//////////////////////////////////////////////////////-->
+  102092
+  <rule id="110050" level="15">
+    <if_sid>60122</if_sid>
+    <field name="win.eventdata.targetDomainName">nessus.org/nessus}$|nessus.org////nessus}$</field>
+    <field name="win.eventdata.targetUserName">nessus.org/nessus}$|nessus.org////nessus}$</field>
+    <description>Nessus detectado</description>
+  </rule>
+  102093
+  <rule id="110051" level="15">
+    <if_sid>60122</if_sid>
+    <field name="win.eventdata.targetDomainName">${jndi:ldap://log4shell-smb-H4B2ewmS5lXHRvpW0FHe${lower:ten}.w.nessus.org/nessus}|{jndi:ldap://log4shell-smb-H4B2ewmS5lXHRvpW0FHe${lower:ten}.w.nessus.org/nessus}</field>
+    <field name="win.eventdata.targetUserName">${jndi:ldap://log4shell-smb-H4B2ewmS5lXHRvpW0FHe${lower:ten}.w.nessus.org/nessus}|{jndi:ldap://log4shell-smb-H4B2ewmS5lXHRvpW0FHe${lower:ten}.w.nessus.org/nessus}</field>
+    <field name="agent.ip">\.+</field>
+    <description>NESSUS detectado</description>
+  </rule>
+  <!--detectar actividad sobre el archivo fethc.exe En este caso con relacion a mitre T1546
+    Event Triggered Execution: Accessibility Features 
+    Este evento va detectando que se solicitó identificación para un objeto: dicho de otra forma, se cambiaron algunos valores y en accessReason estan detallados qué accesos se dieron
+    en este caso especificamente se solicita identificador para sethc.exe
+    Este evento se genera de la siguiente manera: cuando se accede a la opcion de cambiar nombre del sethc.exe se generan 2 eventos, si al ejecutable se le agrega otra extension pero se mantiene el el nombre sethc se generarán 2 eventos mas iguales a los 2 anteriores, si se renombro el ejecutable y a otro nombre ya no se generan otros eventos. Dicho de otra forma, los dos primeros eventos son indicios de modificación a priori o solo se intentó, con los siguientes eventos a continuacion ya se podrá confirmar si ocurrió o no la modificación-->
+    102094
+  <rule id="110052" level="15">
+    <if_sid>60104</if_sid>
+    <field name="win.eventdata.objectName" type="pcre2">^C:\\\\Windows\\\\System32\\\\sethc.exe$</field>
+    <field name="win.eventdata.objectType" type="pcre2">^File$</field>
+    <field name="win.eventdata.processName" type="pcre2">^C:\\\\Windows\\\\explorer.exe$</field>
+    <field name="win.eventdata.accessReason" type="pcre2">\.+</field>
+    <description>ATENCIÓN. Se solicitó identificador para setch.exe</description>
+  </rule>
+  
+  <!--regla que detecta un .exe generado, creado  DllHost es el encargado de alvergar a los objetos COM, objetos que son utilizados por otros programas o procesos como un ejecutable-->
+  102095
+  <rule id="110053" level="15">
+    <if_sid>92217</if_sid>
+    <field name="win.eventdata.image" type="pcre2">^C:\\\\Windows\\\\system32\\\\DllHost\.exe$</field>
+    <field name="win.eventdata.ruleName" type="pcre2">^EXE$</field>
+    <description>ATENCIÓN. Verificar Objeto COM: $(win.eventdata.targetFilename)</description>
+  </rule>
+   <!--Especificamente si se hizo una copia de cmd-->
+   102096
+  <rule id="110054" level="15">
+    <if_sid>110053</if_sid>
+    <field name="win.eventdata.image">^C:\\\\Windows\\\\system32\\\\DllHost.exe$</field>
+    <field name="win.eventdata.ruleName">^EXE$</field>
+    <field name="win.eventdata.targetFilename">C:\\\\Windows\\\\System32\\\\cmd - copia.exe|C:\\\\Windows\\\\System32\\\\cmd - Copy.exe|cmd - copia.exe|cmd - Copy.exe</field>
+    <description>ATENCIÓN. Imagen cmd ha sido modificada. Nuevo nombre: $(win.eventdata.targetFileName)</description>
+  </rule>
+  <!--finalmente, regla que detecta la escalada de privilegios a traves de las caracteristicas de accesibilidad de windows, sticky keys(5 veces shift)-->
+  102097
+  <rule id="110055" level="15">
+    <if_sid>92052</if_sid>
+    <field name="win.eventdata.commandLine">sethc.exe 211</field>
+    <field name="win.eventdata.image">^C:\\\\Windows\\\\System32\\\\sethc.exe$</field>
+    <field name="win.eventdata.originalFileName">^Cmd.Exe$</field>
+    <field name="win.eventdata.parentCommandLine">^winlogon.exe$</field>
+    <field name="win.eventdata.parentImage">^C:\\\\Windows\\\\System32\\\\winlogon.exe$</field>
+    <description>ATENCIÓN. CMD iniciado con altos privilegios desde la pantalla de inicio a través de sethc.exe</description>
+  </rule>
+  
+  <!--Regla que detecta ejecucion de cmd a través de utilman.exe (Windows+U)-->
+  102098
+  <rule id="110056" level="15">
+    <if_sid>92052</if_sid>
+    <field name="win.eventdata.commandLine">utilman.exe /debug</field>
+    <field name="win.eventdata.image">^C:\\\\Windows\\\\System32\\\\utilman.exe$</field>
+    <field name="win.eventdata.originalFileName">^Cmd.Exe$</field>
+    <field name="win.eventdata.parentCommandLine">^winlogon.exe$</field>
+    <field name="win.eventdata.parentImage">^C:\\\\Windows\\\\System32\\\\winlogon.exe$</field>
+    <description>ATENCIÓN. CMD iniciado con altos privilegios desde la pantalla de inicio a través de utilman.exe</description>
+  </rule>
+   <!--En este paso se cambió la usuario propietario del mismo, TrustedInstaller es el propietario propio del sistema y en este paso deja de serlo-->
+  <!--En el siguiente paso al asignarle maximos privilegios al nuevo propietario no se detecta ningun evento, evento considero casi irrelevante ya en esta etapa -->
+  102099
+   <rule id="110057" level="15">
+    <if_sid>60104</if_sid>
+    <field name="win.eventdata.objectName">^C:\\\\Windows\\\\System32\\\\Magnify.exe$</field>
+    <field name="win.eventdata.objectType">^File$</field>
+    <field name="win.eventdata.processName">^C:\\\\Windows\\\\explorer.exe$|^C:\\\\Windows\\\\System32\\\\dllhost.exe$</field>
+    <field name="win.eventdata.accessList">\.+</field>
+    <description>ATENCIÓN. Se solicitó identificador para Magnify.exe</description>
+  </rule>
+   <!--En esta siguiente etapa se deberia detectar qué pasó con el ejecutable si fue renombrado, movido o eliminado, no se registran eventos porque el evento 4663 que detecta eso está excluido en el ossec.conf de forma predeterminada. No es viable hacer ese cambio desde el fichero del endpoint-->
+   102100
+   <rule id="110058" level="15">
+    <if_sid>92052</if_sid>
+    <field name="win.eventdata.commandLine">\\"C:\\\\Windows\\\\System32\\\\Magnify.exe\\"</field>
+    <field name="win.eventdata.image">^C:\\\\Windows\\\\System32\\\\Magnify.exe$</field>
+    <field name="win.eventdata.originalFileName">^Cmd.Exe$</field>
+    <field name="win.eventdata.parentCommandLine">^winlogon.exe$</field>
+    <field name="win.eventdata.parentImage">^C:\\\\Windows\\\\System32\\\\winlogon.exe$</field>
+    <description>ATENCIÓN. CMD iniciado con altos privilegios desde la pantalla de inicio a través de sethc.exe</description>
+  </rule>
+  102101
+  <rule id="110059" level="15">
+    <if_sid>60154</if_sid>
+    <field name="win.system.eventId">4732</field>
+    <description>Miembro agregado al grupo LOCAL Administradores. Miembro asignado:$(win.eventdata.memberSid) por $(win.eventdata.subjectUserName)</description>
+  </rule>
+  102102
+  <rule id="110060" level="15">
+    <if_sid>60154</if_sid>
+    <field name="win.system.eventId">4733</field>
+    <description>Miembro eliminado del grupo LOCAL Administradores. Miembro eliminado:$(win.eventdata.memberSid) por $(win.eventdata.subjectUserName)</description>
+  </rule>
+    <!--creacion de .bat, .ps1, etc-->
+    102103
+  <rule id="110061" level="14">
+    <if_sid>92200</if_sid>
+    <field name="win.eventdata.targetFileName" type="pcre2">\.(bat$|exe$|ps1$|py$|vbs$|js$|com$|jar$)</field>
+    <description>$(win.eventdata.targetFileName) creado a través de $(win.eventdata.image) por $(win.eventdata.user)</description>
+  </rule>
+  
+   <!--61102 es una alerta de "Windows System error event" 
+  El eventID 36874 se produce cuando se recibe una solicitud de conexión TLS 1.0, 1.1 o 1.2 de una aplicación cliente remota, pero ninguno de los conjuntos de aplicaciones de cifrado compatibles con la aplicación cliente es compatible con el servidor-->
+  102104
+  <rule id="110062" level="14">
+    <if_sid>61102</if_sid>
+    <field name="win.system.eventID">^36874$</field>
+    <description>Solicitud de conexión $(win.eventdata.protocol). Error de la solicitud de conexión TLS.</description>
+  </rule> 
+  <!--La regla 61102 es una alerta de "Windows System error event" 
+  El eventID 36874 se genera cuando se recibe una solicitud de conexión TLS 1.0, 1.1 o 1.2 de una aplicación cliente remota, pero ninguno de los conjuntos de aplicaciones de cifrado compatibles con la aplicación cliente es compatible con el servidor. En un escaneo de vulnerabilidades el evento de Windows 36874 se produce aproximadamente 40 veces en 3 minutos, en un escenario normal solo se ven estos eventos 3 a 20 veces en 24 horas-->
+  102105
+  <rule id="110063" level="14" frequency="10" timeframe="180">
+    <if_matched_sid>61102</if_matched_sid>
+    <field name="win.system.eventID">36874</field>
+    <description>ATENCION. Error en solitudes de conexión TLS 1.1 de una aplicación cliente remota. Esta actividad se considera anormal.</description>
+  </rule>
+  
+  <!--Esta regla especifica cuando el evento de inicio de sesion fue generado por un servicio y no por un usuario.-->
+  <!--Evento 60106 Windows logon success-->
+  <!--este evento indica que se ha iniciado sesión correctamente en la cuenta SYSTEM a través del servicio de Advapi. Este tipo de eventos son comunes y se generan como parte del funcionamiento normal del sistema operativo.-->
+  <!--Aproximandamente 80mil eventos al día-->
+  102106
+  <rule id="110064" level="0">
+    <if_sid>60106</if_sid>
+    <field name="win.system.eventID">^4624$</field>
+    <field name="win.eventdata.processName">C:\\\\Windows\\\\System32\\\\services.exe$</field>
+    <field name="win.eventdata.logonType">^5$</field>
+    <field name="win.eventdata.targetUserName">^SYSTEM$</field>
+    <description>Windows Logon success. Evento generado por el Administrador de control de servicios. Un servicio ha iniciado sesion correctamente </description>
+  </rule>
+  <!--/////////////////////////////////////////////////////////***********Errores de autenticación - usuario/estacion******************************/////////////////////////////////////////-->
+  102107
+  <rule id="110065" level="14" frequency="5" timeframe="20">
+    <if_matched_sid>60122</if_matched_sid>
+    <same_field>win.eventdata.ipAddress</same_field>
+    <description>ATENCIÓN. Varios intentos de autenticación de usuario $(win.eventdata.targetUserName) </description>
+  </rule>
+   <!--nessus-->
+
+  
+  
+</group>
+
+ <group name="windows-custom,">
+
+  <rule id="100535" level="0">
+    <if_sid>60009</if_sid>
+    <field name="win.system.providerName">^Microsoft-Windows-PowerShell$</field>
+    <group>powershell,</group>
+    <description>Powershell Information EventLog</description>
+  </rule>
+
+  <rule id="100536" level="5">
+    <if_sid>60010</if_sid>
+    <field name="win.system.providerName">^Microsoft-Windows-PowerShell$</field>
+    <group>powershell,</group>
+    <description>Powershell Warning EventLog</description>
+  </rule>
+
+  <rule id="100537" level="10">
+    <field name="win.system.providerName">^Microsoft-Windows-PowerShell$</field>
+    <field name="win.system.severityValue">^ERROR$</field>
+    <group>powershell,</group>
+    <description>Powershell Error EventLog</description>
+  </rule>
+
+  <rule id="100538" level="13">
+    <if_sid>60012</if_sid>
+    <field name="win.system.providerName">^Microsoft-Windows-PowerShell$</field>
+    <group>powershell,</group>
+    <description>Powershell Critical EventLog</description>
+  </rule>
+
+  <rule id="100539" level="5">
+    <if_sid>100535</if_sid>
+    <field name="win.eventdata.payload" type="pcre2">^CommandInvocation\(Get-Content\)</field>
+    <group>powershell,</group>
+    <description>ATENCION. Comando Get-Content ejecutado. Posible manipulación de archivos sensibles.</description>
+  </rule>
+
+</group>

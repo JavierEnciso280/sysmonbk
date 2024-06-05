@@ -1,0 +1,165 @@
+<!-- Modify it at your will. -->
+<!--///////////////////////////////////////////////REGLAS PERSONALIZADAS//////////////////////////////////////////////-->
+<!--REGLA ORIGINAL DEL BLOQUE ADDUSER EN EL FICHERO 0020, TAMBIEN EN EL FICHERO 1005-OSSEC PARA UNA EVENTUAL SOBREESCRITURA-->
+<!--Reglas desde 104000 en adelante-->
+<!--****************************************************************************-->
+  <!--REGLAS DE ADDUSER DEL FICHERO 0020-->
+  <!-- Adduser messages -->
+<group name="syslog,adduser,">
+  <rule id="5901" level="14" overwrite="yes">
+    <match>^new group</match>
+    <description>New group added to the system.</description>
+    <group>pci_dss_10.2.7,pci_dss_10.2.5,pci_dss_8.1.2,gpg13_4.13,gdpr_IV_35.7.d,gdpr_IV_32.2,hipaa_164.312.b,hipaa_164.312.a.2.I,hipaa_164.312.a.2.II,nist_800_53_AU.14,nist_800_53_AC.7,nist_800_53_AC.2,nist_800_53_IA.4,tsc_CC6.8,tsc_CC7.2,tsc_CC7.3,</group>
+  </rule>
+  
+  <rule id="5902" level="15" overwrite="yes">
+    <match>^new user|^new account added</match>
+    <description>Nuevo usuario ha sido agregado al sistema, Usuario: $(dstuser)</description>
+    <mitre>
+      <id>T1136</id>
+    </mitre>
+    <group>pci_dss_10.2.7,pci_dss_10.2.5,pci_dss_8.1.2,gpg13_4.13,gdpr_IV_35.7.d,gdpr_IV_32.2,hipaa_164.312.b,hipaa_164.312.a.2.I,hipaa_164.312.a.2.II,nist_800_53_AU.14,nist_800_53_AC.7,nist_800_53_AC.2,nist_800_53_IA.4,tsc_CC6.8,tsc_CC7.2,tsc_CC7.3,</group>
+  </rule>
+  <!--new account added-->
+   <rule id="104001" level="15">
+        <if_sid>5902</if_sid>
+        <match>^new account added</match>
+        <description>Nueva cuenta ha sido agregada en el sistema</description>
+    </rule>
+
+  <rule id="5903" level="15">
+    <match>^delete user|^account deleted|^remove group</match>
+    <description>Group (or user) deleted from the system.</description>
+    <mitre>
+      <id>T1531</id>
+    </mitre>
+    <group>pci_dss_10.2.7,pci_dss_10.2.5,pci_dss_8.1.2,gpg13_4.13,gdpr_IV_35.7.d,gdpr_IV_32.2,hipaa_164.312.b,hipaa_164.312.a.2.I,hipaa_164.312.a.2.II,nist_800_53_AU.14,nist_800_53_AC.7,nist_800_53_AC.2,nist_800_53_IA.4,tsc_CC6.8,tsc_CC7.2,tsc_CC7.3,</group>
+  </rule>
+   <!--Esta regla lo unico que hace es ser mas especifica en cuanto al decoder, el decoder toma 3 posibles valores de syslog y genera la alerta Group (or user) deleted, esta regla hace especial atención en el la eliminación de un usuario del sistema. Y las siguientes reglas tambien hacen lo mismo con la eliminación de un grupo o la eliminación de una cuenta-->
+    <rule id="104002" level="15">
+        <if_sid>5903</if_sid>
+        <match>^delete user</match>
+        <description>Usuario ha sido eliminado del sistema.</description>
+    </rule>
+    <!--account deleted-->
+     <rule id="104003" level="15">
+        <if_sid>5903</if_sid>
+        <match>^account deleted</match>
+        <description>Cuenta ha sido eliminada</description>
+    </rule>
+bbb<!--remove group-->
+   <rule id="104004" level="15">
+        <if_sid>5903</if_sid>
+        <match>^removed group</match>
+        <description>Usuario ha sido eliminado del grupo.</description>
+   </rule>
+     
+  <rule id="5904" level="8">
+    <match>^changed user</match>
+    <description>Information from the user was changed.</description>
+    <mitre>
+      <id>T1098</id>
+    </mitre>
+    <group>pci_dss_10.2.7,pci_dss_10.2.5,pci_dss_8.1.2,gpg13_4.13,gdpr_IV_35.7.d,gdpr_IV_32.2,hipaa_164.312.b,hipaa_164.312.a.2.I,hipaa_164.312.a.2.II,nist_800_53_AU.14,nist_800_53_AC.7,nist_800_53_AC.2,nist_800_53_IA.4,tsc_CC6.8,tsc_CC7.2,tsc_CC7.3,</group>
+  </rule>
+
+<!--esta regla no miré aún pero useradd failed como adduser failed no dejan de ser menos importante por lo que se deben analizar las reglas que dependen de este id-->
+  <rule id="5905" level="0">
+    <program_name>useradd</program_name>
+    <match>failed adding user </match>
+    <description>useradd failed.</description>
+  </rule>
+
+esta regla genera un evento cuando la autenticación ha fallado 3 veces, se probó en autenticación ssh
+ <rule id="2502" level="15" overwrite="yes">
+    <match>more authentication failures;|REPEATED login failures</match>
+    <description>ATENCIÓN: SSH - Varios intentos de autenticación sin éxito</description>
+    <mitre>
+      <id>T1110</id>
+    </mitre>
+    <group>authentication_failed,pci_dss_10.2.4,pci_dss_10.2.5,gpg13_7.8,gdpr_IV_35.7.d,gdpr_IV_32.2,hipaa_164.312.b,nist_800_53_AU.14,nist_800_53_AC.7,tsc_CC6.1,tsc_CC6.8,tsc_CC7.2,tsc_CC7.3,</group>
+  </rule>
+</group> <!-- SYSLOG,ADDUSER -->
+
+<!--PAM LOGIN  0085 PAM RULES-->
+<!--Jan 25 11:32:27 javier-VirtualBox sudo: pam_unix(sudo:auth): authentication failure; logname= uid=1000 euid=0 tty=/dev/pts/2 ruser=javier rhost=  user=javier-->
+    <!--<rule id="5503" level="5">-->
+    <!--    <if_sid>5500</if_sid>-->
+    <!--    <match>authentication failure; logname=</match>-->
+    <!--    <description>PAM: User login failed.</description>-->
+    <!--    <mitre>-->
+    <!--    <id>T1110.001</id>-->
+    <!--    </mitre>-->
+    <!--<group>authentication_failed,pci_dss_10.2.4,pci_dss_10.2.5,gpg13_7.8,gdpr_IV_35.7.d,gdpr_IV_32.2,hipaa_164.312.b,nist_800_53_AU.14,nist_800_53_AC.7,tsc_CC6.1,tsc_CC6.8,tsc_CC7.2,tsc_CC7.3,</group>-->
+    <!--</rule>-->
+    
+    <!--PAM password-->
+<!--cambio o asignacion de contraseña regla sobreescrita-->
+<group name="pam,syslog,">
+    <rule id="5555" level="15" overwrite="yes">
+    <match>: password changed for</match>
+    <description>PAM: Usuario $(dstuser) cambió su contraseña. Verificar este cambio</description>
+    <group>pci_dss_8.1.2,pci_dss_10.2.5,gpg13_4.13,gpg13_7.10,gdpr_IV_35.7.d,gdpr_IV_32.2,hipaa_164.312.a.2.I,hipaa_164.312.a.2.II,hipaa_164.312.b,nist_800_53_AC.2,nist_800_53_IA.4,nist_800_53_AU.14,nist_800_53_AC.7,tsc_CC6.8,tsc_CC7.2,tsc_CC7.3,</group>
+  </rule>
+  
+  
+   <!--si el euid es 0 (root) generar la siguiente alerta-->
+    <rule id="104100" level="15">
+        <if_sid>5503</if_sid>
+        <field name="euid">^0$</field>
+        <description>Intento fallido de iniciar sesión root</description>
+    </rule>
+    
+    
+  
+    
+    <!--PAM: Login session opened.  rule id 5501, alertar si es root el que inicia la sesión-->
+    <!--En auth.log generan dos registros y son los siguientes:-->
+        <!--Jan 25 12:04:29 javier-VirtualBox su: pam_unix(su:session): session opened for user root(uid=0) by javier(uid=0) -->
+        <!--Jan 25 12:11:51 javier-VirtualBox sudo: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)-->
+    <!--En wazuh tambien se capturan los dos eventos, las diferencias son:-->
+    <!--En un evento se indica el id del usuario efectivo ( by (uid=1000) )-->
+    <!--En el otro evento se registra el nombre del usuario efectivo ( javier(uid=0))-->
+    
+    Regla original, no se toca
+    <rule id="5501" level="3">
+        <if_sid>5500</if_sid>
+        <match>session opened for user </match>
+        <description>PAM: Login session opened.</description>
+        <mitre>
+        <id>T1078</id>
+        </mitre>
+    <group>authentication_success,pci_dss_10.2.5,gpg13_7.8,gpg13_7.9,gdpr_IV_32.2,hipaa_164.312.b,nist_800_53_AU.14,nist_800_53_AC.7,tsc_CC6.8,tsc_CC7.2,tsc_CC7.3,</group>
+    </rule>
+    
+    en base a la regla 5501 y al regla 104102 se puede diferenciar si el user que inicia sesion es root
+    primer hacer match con el registro session opened for user root(uid=0) y en esta regla mostrar el id del usuario efectivo
+    <rule id="104102" level="10">
+        <if_sid>5501</if_sid>
+        <match>session opened for user root(uid=0)</match>
+        <description>ID Usurio que inició sesión ROOT: $(uid)</description>
+    </rule>
+    
+    Recordar que se generan dos registros en auth.log, una con el id del usuario y otra solo con el nombre del usuario que realiza la acción. En esta regla se muestra el nombre del usuario.
+    El registro que tiene el valor uid:0 es el que tiene el nombre del usuario, en el evento anterior el valor de esa etiqueta es el id del usuario en ese caso 1000
+    <rule id="104105" level="15">
+        <if_sid>5501,104102</if_sid>
+        <field name="uid">^0</field>
+        <description>ATENCION. Usuario $(srcuser) inició sesion ROOT</description>
+    </rule>
+   
+   
+    <rule id="5405" level="15" overwrite="yes">
+    <if_sid>5400</if_sid>
+    <match>user NOT in sudoers</match>
+    <description>Unauthorized user attempted to use sudo.</description>
+    <mitre>
+      <id>T1548.003</id>
+    </mitre>
+    <group>pci_dss_10.2.2,pci_dss_10.2.5,gpg13_7.8,gdpr_IV_35.7.d,gdpr_IV_32.2,hipaa_164.312.b,nist_800_53_AU.14,nist_800_53_AC.6,nist_800_53_AC.7,tsc_CC6.8,tsc_CC7.2,tsc_CC7.3,</group>
+  </rule>
+    
+</group>
+
+
+

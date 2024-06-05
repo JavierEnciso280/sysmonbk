@@ -1,0 +1,203 @@
+ <!--exclusivo TSHI-->
+  <!--Si los cambios de contraseñas NO son realizados por los usuarios responsables de tal proceso, personalizado TSHI-->
+  102023 (id anterior)
+  <rule id="102075" level="15">
+    <if_sid>102074</if_sid>
+    <field name="win.eventdata.subjectUserName" type="pcre2" negate="yes">^sueda$|^mduarte$|^mrolon$|^uthompson$</field>
+    <description>ATENCIÓN. Cambio de contraseña de usuario realizado por $(win.eventdata.subjectUserName)</description>
+  </rule>
+
+   <!--exclusivo TSHI-->
+   <!--CAMBIO DE PASSWORD ADMINISTRADORES personalizado TSHI-->
+   102024 (id anterior)
+  <rule id="102076" level="15">
+    <if_sid>102072</if_sid>
+    <field name="win.eventdata.subjectUserName">\.+</field>
+    <field name="win.eventdata.targetUserName">^jjbenitez$|^lzazzi$|^sueda$|^admservices$|^gpoadmin$|^mduarte$|^mrolon$|^uthompson$|^adsync$</field>
+    <description>ATENCIÓN. SE CAMBIÓ LA CONTRASEÑA DE UN USUARIO ADMINISTRADOR. $(win.eventdata.subjectUserName) ha cambiado la contraseña de $(win.eventdata.targetUsername)</description>
+  </rule>
+  <!--exclusivo TSHI-->
+   <rule id="102077" level="15">
+    <if_sid>102072</if_sid>
+    <field name="win.eventdata.subjectUserName" type="pcre2" negate="yes">^sueda$</field>   
+    <description>ATENCIÓN. $(win.eventdata.subjectUserName) creó la cuenta SAM: $(win.eventdata.samAccountName) </description>
+  </rule>
+    <!--exclusivo TSHI-->
+  <!--Inicio de sesión de usuario en la cuenta deshabilitada por el administrador	Por ejemplo, N eventos en los últimos N minutos pueden ser un indicador de un intento de compromiso de cuenta, especialmente relevante para las cuentas altamente críticas.-->
+  <!--En algunos casos, un sistema puede intentar realizar la autenticación automáticamente, por ejemplo, al intentar acceder a recursos compartidos de red o servicios antes de que un usuario inicie sesión de manera interactiva. En estos casos, también se verificará el estado de la cuenta antes de permitir el acceso. -->
+  <rule id="102085" level="15">
+    <if_sid>102080</if_sid>
+    <field name="win.eventdata.status">^0xc0000072$</field>
+    <field name="win.eventdata.targetUserName" type="pcre2" negate="yes">^lzazzi$</field>
+    <description>El controlador de dominio intentó validar las credenciales de una cuenta deshabilitada</description>
+  </rule>
+  <!--exclusivo TSHI-->
+  <rule id="102109" level="0">
+    <if_sid>61138</if_sid>
+    <field name="win.eventdata.imagePath">C:\\\\Program Files (x86)\\\\DENSO CORPORATION\\\\DENSO ScanTool Agent\\\\RunContSvc.exe</field>
+    <field name="win.eventdata.serviceName">^RunContService$</field>
+    <description>Servicio: $(win.eventdata.serviceName). Equipo de diagnóstico para taller. Herramienta interactiva de diagnóstico de información y comunicación de DENSO (DENSO-C)</description>
+  </rule>
+  <!--exclusivo TSHI-->
+  <rule id="102109" level="0">
+    <if_sid>61138</if_sid>
+    <field name="win.eventdata.imagePath">C:\\\\Program Files (x86)\\\\DENSO CORPORATION\\\\DENSO ScanTool Agent\\\\RunContSvc.exe</field>
+    <field name="win.eventdata.serviceName">^RunContService$</field>
+    <description>Servicio: $(win.eventdata.serviceName). Equipo de diagnóstico para taller. Herramienta interactiva de diagnóstico de información y comunicación de DENSO (DENSO-C)</description>
+  </rule>
+
+  <!-- personalizados de sysmon TSHI -->
+   <!--Exclusivo TSHI-->
+   procesos de Procesos excluidos de este evento por el momento 
+   <rule id="101304" level="14">
+        <if_sid>101302</if_sid>
+        <field name="win.eventdata.integrityLevel">^High$</field>
+        <field name="win.eventdata.currentDirectory" type="pcre2" negate="yes">C:\\\\Procesos</field>
+        <description>ATENCIÓN. CMD iniciado con altos privilegios</description>
+   </rule>
+   
+    <!--Exclusivo TSHI-->
+  Exlusiones de procesos MiFactura - Eventos derivados de la regla 101321 que engloba todos los procesos que se ejecutan desde el directorio "Procesos"
+  Cualquier otro proceso nuevo o que no sean éstos que se generen desde estas rutas se van a ver en el dashboard como id evento 101321
+  <rule id="101324" level="0">
+    <if_sid>101321</if_sid>
+    <field name="win.eventdata.commandLine" type="pcre2">php\s+(procesarFacturaTSAV3|procesarFacturaVehiculoAMSAV2|procesarRemisionAMSA|procesarNCVehiculoTSA|procesarFacturaVehiculoTSAV3|procesarAutofacturaAMSAV2|procesarNCTSA|procesarFacturaVehiculoAMSAV3|procesarNCVehiculoAMSA|procesarNCAMSA|procesarRemisionTSA|procesarAutofacturaTSA|procesarFacturaTSAaAMSA|procesarNCTSA|procesarFacturaVehiculoTSAV2|procesarFacturaAMSAV3)\.php$|timeout\s+/t\s+\d+</field>
+    <field name="win.eventdata.currentDirectory" type="pcre2">C:\\\\Procesos\\\\MiFactura\\\\PROD\\\\ProcesarFacturasRest</field>
+    <field name="win.eventdata.image" type="pcre2">C:\\\\Program\s+Files\\\\Ampps\\\\php-7\.3\\\\php\.exe$|C:\\\\Windows\\\\System32\\\\timeout\.exe$</field>
+    <field name="win.eventdata.parentUser" type="pcre2">^GRUPOTOYOTOSHI\\\\Fsanabria$</field>
+    <field name="win.eventdata.user" type="pcre2">^GRUPOTOYOTOSHI\\\\Fsanabria$</field>
+    <description>Procesos habituales MiFactura PROD PHP</description>
+  </rule>
+     <!--Exclusivo TSHI-->
+  Esta regla abarca dos subdirectorios principales por debajo del directorio principal "Procesos", estos subdirectorios son MiFactura y TM_AR_Transaccional
+   Los subdirectorios dentro de C:\\Procesos\\MiFactura\\TM_PROD son ProcesarFacturasRest y ActualizarEstadoSet (aprox. 200mil eventos por dia)
+   Los subdirectorios en este caso son C:\\Procesos\\TM_AR_Transaccional\\orcCargaFacturaTranProd\\views 
+  <rule id="101325" level="0">
+    <if_sid>101321</if_sid>
+    <field name="win.eventdata.commandLine" type="pcre2">php\s+(procesarNotaCreditoTFP|procesarFacturaTFP|procesarAutofacturaTM|procesarNotaCreditoTM|procesarFacturaTM|actualizarRegistrosSet|cargarfacturas)\.php|timeout\s+/t\s+\d+</field>
+    <field name="win.eventdata.currentDirectory" type="pcre2">C:\\\\Procesos\\\\MiFactura\\\\TM_PROD\\\\(ProcesarFacturasRest|ActualizarEstadoSet)|C:\\\\Procesos\\\\TM_AR_Transaccional\\\\orcCargaFacturaTranProd\\\\views</field>
+    <field name="win.eventdata.image" type="pcre2">C:\\\\Program Files\\\\Ampps\\\\php-7\.3\\\\php\.exe$|C:\\\\Windows\\\\System32\\\\timeout\.exe$</field>
+    <field name="win.eventdata.parentUser" type="pcre2">^GRUPOTOYOTOSHI\\\\Fsanabria$</field>
+    <field name="win.eventdata.user" type="pcre2">^GRUPOTOYOTOSHI\\\\Fsanabria$</field>
+    <description>Procesos habituales MiFactura-TM_PROD y TM_AR_Transaccional</description>
+  </rule>
+  <!--Exclusivo TSHI-->
+ Mas procesos MiFactura
+ C:\\Procesos\\MiFactura\\TGC_PROD\\ProcesarFacturasRest\\
+
+ <rule id="101331" level="10">
+    <if_sid>101321</if_sid>
+    <field name="win.eventdata.commandLine" type="pcre2">(php\s+(procesarRemisionTGC\.php|procesarFacturaTGC_EXPORT\.php|procesarFacturaTGC_LOCAL\.php))|timeout\s+/t\s+60</field>
+    <field name="win.eventdata.currentDirectory">C:\\\\Procesos\\\\MiFactura\\\\TGC_PROD\\\\ProcesarFacturasRest</field>
+    <field name="win.eventdata.image" type="pcre2">C:\\\\Program Files\\\\Ampps\\\\php-7.3\\\\php.exe$|C:\\\\Windows\\\\System32\\\\timeout.exe$</field>
+    <description>Procesos habituales MiFactura-TGC_PROD</description>
+  </rule>
+  <!-- network connection -->
+   </rule>
+    <!--Exclusivo TSHI-->
+    Excluir eventos del exchange que no aportan info de utilidad de conexiones de red del SERVEREXCHANGE
+    Ninguna de las siguientes IP´s que se incluyen en ésta regla tiene un agente de wazuh
+    --- IP 10.10.10.132 produce aprox 2mil eventos al dia
+    --- IP 10.10.10.126 (el mismo contra el mismo) produce aprox 1mil eventos al dia
+    --- IP 10.10.10.243 aprox 2mil eventos al día
+     <rule id="101504" level="0">
+        <if_sid>101500</if_sid>
+        <field name="win.eventdata.destinationIp" type="pcre2">^10.10.10.126$</field>
+        <field name="win.eventdata.destinationPort" type="pcre2">^25$</field>
+        <field name="win.eventdata.image" type="pcre2">^C:\\\\Program Files\\\\Microsoft\\\\Exchange Server\\\\V15\\\\Bin\\\\MSExchangeFrontendTransport\.exe$</field>
+        <field name="win.eventdata.sourceIp" type="pcre2">^10.10.10.132$|^10.10.10.126$|^10.10.10.243$|^10.10.30.91$|^10.10.10.131$|^10.111.13.150$|^10.111.12.186$|^10.10.57.83$|^10.10.10.180$|^10.10.10.137$|^10.10.30.90$|^10.111.12.157$|^10.10.20.80$|^10.10.80.90$|^10.10.10.122$|^10.111.13.249$|^10.111.11.152$|^192.168.2.97$|^10.10.10.187$|^10.10.12.157$</field>
+        <field name="win.system.computer" type="pcre2">^SERVEREXCHANGE.grupotoyotoshi.com.py$</field>
+        <description>Conexion en el puerto $(win.eventdata.destinationPort) a través de $(win.eventdata.image) del SERVEREXCHANGE</description>
+    </rule>
+     CONEXIONES DE RED DE JAVA.EXE
+*** Esta imagen produce aprox 1.400.000 eventos al día en total, cuando el destino es la ip del mismo agente donde se produce la conexión
+    Imagen: C:\\Program Files (x86)\\Java\\jre1.8.0_221\\bin\\java.exe
+    IP AGENTE: 10.10.10.249  (SERVERAV)
+    DESTINATION IP: 10.10.10.249 (SERVERAV)
+    IP DE ORIGEN: VARIAS IP´S LOCALES
+*** Luego hay muchos otros eventos donde el DESTINATION IP son las que considero se deben investigar mas a detalle una vez que se separe todo el ruido de las ips de origen locales que son aprox 40mil eventos de conexiones a ip´s del tipo 192.168.0.0
+*** En esta regla primero se captura ese comportamiento general, todas las conexiones de red generadas por java.exe 
+    <rule id="101505" level="5">
+        <if_sid>101500</if_sid>
+        <field name="win.eventdata.image" type="pcre2">C:\\\\Program Files \(x86\)\\\\Java\\\\jre1.8.0_221\\\\bin\\\\java\.exe$</field>
+        <description>Conexiones de java.exe, origen de la conexión: $(win.eventdata.sourceIp), destino de la conexión: $(win.eventdata.destinationIp)</description>
+    </rule>
+    <!--Exclusivo TSHI-->
+*** Esta regla especifica cuando el destino de la conexion es el mismo agente que genera este evento, osea SERVERAV IP 10.10.10.249 genera una conexion de red desde una ip local, con destino a la misma ip de SERVERAP. En otros eventos el destino es diferente y es eso lo que se busca separar, esta regla abarca los 1.400.000 eventos al dia 
+    <rule id="101506" level="0">
+        <if_sid>101505</if_sid>
+        <field name="win.eventdata.destinationIp" type="pcre2">^10.10.10.249$</field>
+        <field name="win.eventdata.sourceIp" type="pcre2">^10\.</field>
+        <description>Conexiones de java.exe, origen de la conexión: $(win.eventdata.sourceIp), destino de la conexión SERVERAV (él mismo)</description>
+    </rule>
+     <!--Exclusivo TSHI-->
+  Descarga de archivos desde la web excepto los archivos descargados como parte del backup desde outlook.exe en el servidor autidtoria1 
+   <rule id="101602" level="14">
+    <if_sid>101111</if_sid>
+    <field name="win.eventdata.targetFilename">Zone\.Identifier$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">OUTLOOK.EXE$</field>
+    <field name="agent.ip" type="pcre2" negate="yes">^10.111.12.17$</field>
+    <description>ATENCIÓN. Descarga de archivo desde la web. Verificar ésta acción</description>
+  </rule>
+    <!--Exclusivo TSHI-->
+La regla 92214 que deriva del evento 11 de sysmon infoma lo siguiente: Si a partir de winword, excel, powerpoint, outlook se crea un .lnk dentro del directorio principal AppData que genere una alerta nivel 15, pero este comportamiento es algo normal en la mayoria de los casos ya que si se abre un archivo especifico como parte del trabajo diario como una planilla de excel o un documento en word, el sistema automaticamente genera un .lnk en C:\Users\USUARIO\AppData\Roaming\Microsoft\Office\Recent como un acceso directo. lo que genera muchos falsos positivos
+Regla original:
+  --- "win.eventdata.image" type="pcre2">(?i)(winword|excel|powerpnt|outlook)\.exe  
+  --- "win.eventdata.targetFilename" type="pcre2">(?i)appdata\\\\.+\.lnk            
+  ---  Suspicious file created by Microsoft Office process: $(win.eventdata.image) created $(win.eventdata.targetFilename) 
+Exluir especifamente los mismos eventos que ya se observaron hasta ahora como normal, en este gaso el usuario que genera estos eventos es siempre el mismo y las planillas que va utilzando se van a detallar a continuación:
+*** Usuario: GRUPOTOYOTOSHI\\mrenaut
+PARA WORD simpre es el mismo archivo
+--- data.win.eventdata.image  C:\\Program Files\\Microsoft Office\\Root\\Office16\\WINWORD.EXE
+--- data.win.eventdata.targetFilename  C:\\Users\\mrenaut\\AppData\\Roaming\\Microsoft\\Office\\Recent\\DATOS PARA ESCRITURA.LNK
+PARA EXCEL son varios y los .LNK que se generan dentro de Recent
+*** data.win.eventdata.image  C:\\Program Files\\Microsoft Office\\Root\\Office16\\EXCEL.EXE
+*** win.eventdata.targetFilename   C:\\Users\\mrenaut\\AppData\\Roaming\\Microsoft\\Office\\Recent
+  --- CALCULO DEVENGAMIENTO ANUAL MAPFRE.LNK
+  --- PLANILLA TOYOTOSHI.LNK
+  --- depachado 228.LNK
+  --- INVENTARIO - COSTO VEHICULOS.LNK
+  --- fisico enero.LNK
+  --- ventas.LNK
+  --- fisico febrero.LNK
+  --- despacho febrero.LNK
+  --- vehiculosvendidos0kmcosto.LNK
+  --- fisicofebrero.LNK
+  --- brp ubicaciones.LNK
+  --- INFORME DE SITUACION STOCK DE VEHICULOS USADOS MARZO.LNK
+*** data.win.eventdata.targetFilename C:\\Users\\mrenaut\\AppData\\Roaming\\Microsoft\\Excel\\
+  --- CALCULO%20DEVENGAMIENTO%20ANUAL%20MAPFRE310945000975739293\\CALCULO%20DEVENGAMIENTO%20ANUAL%20MAPFRE.xlsx.lnk,
+  --- despacho%20febrero.xls.lnk
+  ---INVENTARIO%20-%20COSTO%20VEHICULOS310939371770098853\\INVENTARIO%20-%20COSTO%20VEHICULOS.xls.lnk
+  Para .LNK word y excel dentro de Recent se van a excluir las alertas nivel 15
+  <rule id="101603" level="3">
+    <if_sid>92214</if_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)(winword|excel)\.exe$</field>
+    <field name="win.eventdata.targetFilename" type="pcre2">AppData\\\\Roaming\\\\Microsoft\\\\Office\\\\Recent\\\\.+\.LNK$</field>
+    <field name="win.eventdata.user">^GRUPOTOYOTOSHI\\\\mrenaut$</field>
+    <description>Planillas de trabajo utilizadas. Planilla $(win.eventdata.targetFilename)</description>
+  </rule>
+  <!--Exclusivo TSHI-->
+  Para excel .xlsx.lnk
+   <rule id="101604" level="3">
+    <if_sid>92214</if_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)excel\.exe$</field>
+    <field name="win.eventdata.targetFilename" type="pcre2">C:\\\\Users\\\\mrenaut\\\\AppData\\\\Roaming\\\\Microsoft\\\\Excel\\\\(\S+COSTO%20VEHICULOS|\S+MAPFRE|despacho\S+)\.xlsx\.lnk</field>
+    <field name="win.eventdata.user">^GRUPOTOYOTOSHI\\\\mrenaut$</field>
+    <description>Planilla de trabajo comúnmente utilizada. Planilla $(win.eventdata.targetFilename)</description>
+  </rule>
+   <!--Habilitar registro de esta clave en sysmon-->
+<!--Sobre las alertas generadas por FTK imager y cambios en el registro de windows-->
+ <rule id="101904" level="14">
+    <if_sid>101113</if_sid>
+    <field name="win.eventdata.targetObject">HKLM\\\\System\\\\CurrentControlSet\\\\Services\\\\ad_driver</field>
+    <description>ATENCIÓN. Cambio en la clave del registro de Windows realizado por AccessData FTK Imager. Registro:$(win.eventdata.targetObject)</description>
+ </rule>
+  <!-- MAC spoofing -->
+  <!--Agregar registro en sysmon-->
+    <rule id="104048" level="14">
+        <if_sid>101113</if_sid>
+        <field name="win.eventdata.targetObject" type="pcre2">HKLM\\\\System\\\\CurrentControlSet\\\\Control\\\\Class\\\\{4d36e972-e325-11ce-bfc1-08002be10318}\\\\.+\\\\NetworkAddress</field>
+        <description>ATENCION. Se ha cambiado el registro de las interfaces de red. Posible Spoofing</description>
+    </rule>
+    

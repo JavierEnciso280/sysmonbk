@@ -1,0 +1,675 @@
+<!-- Modify it at your will. -->
+<!--Monitoreando ficheros linux-->
+<group name="Grupo de reglas Auditd ISG,">
+
+<!--escritura en /etc/passwd, lectura esta enfocada en el uso de comandos sobre el fichero y no en lecturas que recibe el fichero ya que son muchos los procesos que hacen esa acción y genera mucho ruido-->
+<rule id="103000" level="15">
+    <if_sid>80781</if_sid>
+    <field name="audit.key">^audit-passwd-w$</field>
+    <description>ATENCION. ESCRITURA $(audit.file.name) ha sido modificado</description>
+</rule>
+cat /root/.bash_history
+<rule id="103002" level="10">
+    <if_sid>80784</if_sid>
+    <field name="audit.key">^history$</field>
+    <description>Actividad de descubrimiento en el archivo /root/.bash_history</description>
+</rule>
+sshd_config
+si se ejecuta un ls dentro del directorio /etc/ssh ya se genera un evento o en realidad varios eventos, ya que se lista todos los ficheros del directorio y se generan los eventos 80784 y 80785
+La diferencia entre estos eventos es que el 80784 no contiene la etiqueta "audit.directory.name" mientras que el evento 80785 si lo tiene. 
+Primera regla detecta a través el evento 80784 y 80785 si el directorio actual donde se ejecuta un comando es /etc/ssh ya que los dos eventos tienen el audit.cwd field asi solo se genera un evento y no un evento por cada fichero dentro del directorio
+ 
+  <rule id="80785" level="3" overwrite="yes">
+    <if_sid>80783</if_sid>
+    <field name="audit.cwd">\.+</field>
+    <description>Audit: Watch - Read access: $(audit.cwd).</description>
+    <group>audit_watch_read,gdpr_IV_30.1.g,</group>
+  </rule>
+  
+  la regla 2834 detecta el comando crontab -e, si no se altera el fichero solo se genera este evento
+  <rule id="2834" level="15" overwrite="yes">
+    <if_sid>2830</if_sid>
+    <match>BEGIN EDIT</match>
+    <description>Crontab -e ejecutado.</description>
+  </rule>
+  
+  sudoers, comandos ejecutados contra el fichero sudoers
+  <rule id="103056" level="14">
+    <if_sid>80792</if_sid>
+    <field name="audit.command">\.+</field>
+    <field name="audit.execve.a1">^sudoers$</field>
+    <description>Comando $(audit.command) ejecutado en $(audit.execve.a1)</description>
+  </rule>
+  
+  escritura en sudoers
+  <rule id="103057" level="15">
+    <if_sid>80781</if_sid>
+    <field name="audit.key">^audit-sudo-w$</field>
+    <description>ATENCIÓN. Escritura en sudoers, Comando $(audit.command) ejecutado</description>
+  </rule>
+
+  read access de cron
+  <rule id="103058" level="15">
+    <if_sid>80785</if_sid>
+    <field name="audit.key">^audit-cron-r$</field>
+    <field name="audit.command" type="pcre2" negate="yes">^bash$</field>
+    <description>Acceso de Lectura en cron: Comando $(audit.command), Directorio Actual: $(audit.cwd), ID de Usuario efectivo: $(audit.euid)</description>
+  </rule>
+  
+  write access cron
+    80790 <!--  <match>type=CREATE</match>-->
+    80791 <!--<match>type=DELETE</match>-->
+    80782 detecta si se cambio un valor en el crontab del user no root (llave audit-cron-w)
+  <rule id="103059" level="15">
+    <if_sid>80790</if_sid>
+    <field name="audit.key">^audit-cron-w$</field>
+    <field name="audit.file.name" type="pcre2" negate="yes">\.swp</field>
+    <description>Archivo $(audit.file.name) creado en $(audit.directory.name)</description>
+  </rule>
+  <rule id="103060" level="15">
+    <if_sid>80791</if_sid>
+    <field name="audit.key">^audit-cron-w$</field>
+    <field name="audit.file.name" type="pcre2" negate="yes">\.swp</field>
+    <description>ATENCIÓN. Archivo $(audit.file.name) eliminado en $(audit.directory.name)</description>
+  </rule>
+  
+  lectura de un usuario normal en el fichero /etc/passwd, llave de usuario normal en auditd passwd-user-r
+  /usr/libexec/xdg  Se encarga de gestionar las interacciones entre aplicaciones
+  /usr/bin/Xwayland Funciona como puente entre X11 y Wayland
+  /usr/libexec/gsd  Es parte del demonio de configuración de GNOME, gnome-settings-daemon (GSD)
+  <rule id="103061" level="15">
+    <if_sid>80784</if_sid>
+    <field name="audit.command" type="pcre2" negate="yes">^bash$|^sudo$|^fusermount3$|^gvfs-udisks2-vo$|^Xwayland$|^xdg-desktop-por$|^gsd-power$|^gsd-xsettings$|^gsd-media-keys$|^gsd-print-notif$|^gnome-session-b$|^pipewire$|^pipewire-media-$|^snap$|^gdm-session-wor$|^dbus-daemon$|^gnome-shell$|^evolution-sourc$|^evolution-calen$|^ibus-daemon$|^snap-store$|^wazuh-syscheckd$|^pkill$|^ibus-daemon$|^colord$|^whoami|^w|^finger|^pkexec$|^polkitd$</field>
+    <field name="audit.key">^passwd-user-r$</field>
+    <description>Acceso de Lectura: Comando $(audit.command) ejecutado en $(audit.file.name) ID de Usuario: $(audit.auid)</description>
+  </rule>
+  read access rc.local tanto para cat, nano, vim, etc. Mientras no se cambie el contenido del fichero se generará ésta alerta, si se modifica su contenido tambien se genera la alerta 103060
+  <rule id="103062" level="15">
+    <if_sid>80784</if_sid>
+    <field name="audit.key">^audit-rc-r$</field>
+    <description>Acceso de Lectura: Comando $(audit.command) ejecutado en $(audit.file.name) ID Usuario efectivo: $(audit.euid)</description>
+  </rule>
+  write access, rc.local
+  <rule id="103063" level="15">
+    <if_sid>80781</if_sid>
+    <field name="audit.key">^audit-rc-w$</field>
+    <field name="audit.exit" type="pcre2" negate="yes">^-13$</field>
+    <description>ATENCIÓN. Escritura: $(audit.file.name) del directorio $(audit.cwd) ha sido modificado. ID Usuario efectivo: $(audit.euid)</description>
+  </rule>
+  
+  LECTURA DEL FICHERO SSHD_CONFIG
+  <rule id="103064" level="14">
+    <if_sid>80784,80785</if_sid>
+    <field name="audit.command" type="pcre2" negate="yes">^bash$</field>
+    <field name="audit.key">^audit-ssh-r$</field>
+    <description>Acceso de Lectura en directorio /etc/ssh.</description>
+  </rule>
+  
+  Si se crea un archivo en el directorio /etc/ssh ya sea desde esa ubicación como desde otra, se genera el evento 80790 Audit: Created: /etc/ssh/algo.txt.
+  <rule id="103065" level="15">
+    <if_sid>80790</if_sid>
+    <field name="audit.key">^audit-ssh-w$</field>
+    <field name="audit.file.name" type="pcre2" negate="yes">\.swp$</field>
+    <description>ATENCIÓN. Acceso de Escritura en /etc/ssh: $(audit.file.name)</description>
+  </rule>
+  
+  <!--si se lee el fichero sshd_config-->
+  <!--<rule id="103066" level="15">-->
+  <!--  <if_sid>80784</if_sid>-->
+  <!--  <field name="audit.file.name">^sshd_config$</field>-->
+  <!--  <description>ATENCIÓN. Acceso de lectura, comando $(audit.command) ejecutado en $(audit.file.name)</description>-->
+  <!--</rule>-->
+  
+  si se cambia un valor dentro del fichero sshd_config
+  <rule id="103067" level="15">
+    <if_sid>80781</if_sid>
+    <field name="audit.key">^audit-ssh-w$</field>
+    <field name="audit.file.name" type="pcre2" negate="yes">\.swp$</field>
+    <description>ATENCIÓN. Escritura en $(audit.directory.name), Archivo: $(audit.file.name)</description>
+  </rule>
+  
+  si se escribe algo en un dentro del directorio /etc/ssh, suponiendo que se agrega un fichero clonado con otro nombre para luego eliminar el fichero original o para pasarle valores a a un fichero sin necesidad de abrirlo, se genera una alerta de write access otra vez solo que ahora en el directorio
+  no se indica un simbolo de final en la condicion porque se asume que puede agregarse un fichero dentro del directorio o cambiarse un valor de un fichero existente en el, si el target es sshd_config se genera la alerta de arriba
+  obs. si se utiliza echo para pasar un valor a un fichero, se genera este evento tambien pero en command vemos el valor "bash" y como destino al fichero afectado
+   <rule id="103068" level="15">
+    <if_sid>80781</if_sid>
+    <field name="audit.file.name" type="pcre2" negate="yes">\.swp$</field>
+    <field name="audit.key">^audit-ssh-w$</field>
+    <description>ATENCIÓN. Posible escritura, archivo de destino $(audit.file.name)</description>
+  </rule>
+  
+  write access crontabs del user no root
+   80782 detecta si se cambio un valor en el crontab del user no root (llave audit-cron-w)
+  <rule id="103069" level="14">
+    <if_sid>80782</if_sid>
+    <field name="audit.key">^audit-cron-w$</field>
+    <description>ATENCIÓN. Escritura en crontabs del id User: $(audit.auid)</description>
+  </rule>
+  
+  
+  write access etc/shadow
+  <rule id="103070" level="15">
+    <if_sid>80781</if_sid>
+    <field name="audit.command" type="pcre2" negate="yes">^passwd$</field>
+    <field name="audit.key">^audit-shadow-w$</field>
+    <description>ATENCIÓM. ESCRITURA en /etc/shadow, comando $(audit.command)</description>
+  </rule>
+  
+  read access dentro de crontabs es detectado por el evento 80785
+   <rule id="103071" level="15">
+    <if_sid>80784</if_sid>
+    <field name="audit.key">^audit-cron-r$</field>
+    <description>Lectura en el archivo principal de CRON: Comando $(audit.command) en $(audit.file.name). ID Usuario efectivo: $(audit.euid)</description>
+   </rule>
+   Write access 80781 
+    <rule id="103072" level="15">
+        <if_sid>80781</if_sid>
+        <field name="audit.key">^audit-cron-w$</field>
+        <field name="audit.file.name" type="pcre2" negate="yes">\.swp$</field>
+        <description>ATENCIÓN. Escritura detectada en $(audit.directory.name) Archivo:$(audit.file.name) </description>
+   </rule>
+  
+  comandos ejecutados sobre /etc/shadow
+  <rule id="103074" level="15">
+    <if_sid>80792</if_sid>
+    <field name="audit.command">\.+</field>
+    <field name="audit.execve.a1">^/etc/shadow</field>
+    <description>ATENCIÓN. $(audit.command) ejecutado en $(audit.execve.a1)</description>
+  </rule>
+  
+    
+    Cuando se realiza el montado de un directorio remoto mediante el protocolo sshfs, lo que pasa en el server que recibe ésta conexión es que el bash recibe como agumento al servidor sftp 
+    Es decir, /usr/lib/openssh/sftp-server
+    Auditando la execución de este servidor, se genera en wazuh el evento con 80789 Execute Access con la llave audit-sftp-x
+    Esta regla lo que hace es detectar ese argumento una vez que se audita dicho servidor en auditd con la regla -w /usr/lib/openssh/sftp-server
+    <rule id="103075" level="15">
+        <if_sid>80789</if_sid>
+        <field name="audit.key">^audit-sftp-x$</field>
+        <description>ATENCIÓN. Conexión SSHFS detectada, Servidor SFTP iniciado.</description>
+    </rule>
+    
+    lectura de ssh de un usuario normal ya sea en directorio o el fichero principal
+      <rule id="103076" level="15">
+        <if_sid>80784,80785</if_sid>
+        <field name="audit.key">^ssh-user$</field>
+        <description>ATENCIÓN. Lectura en /etc/ssh/sshd_config. Comando $(audit.command), ID de Usuario efectivo: $(audit.euid) </description>
+    </rule>
+
+    <rule id="103077" level="15">
+        <if_sid>80782</if_sid>
+        <field name="audit.key">^audit-ssh-w$</field>
+        <field name="audit.exit">^-13$</field>
+        <description>ATENCIÓN. Intento de escritura en directorio $(audit.directory.name). Comando $(audit.command), ID de Usuario efectivo: $(audit.euid) </description>
+    </rule>
+
+    si el intento de lectura arroja un failure de arvhivo principal de cron
+    audit.file.name
+	root
+	audit.exit
+	-13
+	<rule id="103078" level="15">
+        <if_sid>103071</if_sid>
+        <field name="audit.file.name">^root$</field>
+        <field name="audit.exit">^-13$</field>
+        <description>ATENCIÓN. Intento de lectura en CRON. Archivo: $(audit.file.name). Comando $(audit.command), ID de Usuario efectivo: $(audit.euid) </description>
+    </rule>
+  
+  lectura de bash.bashrc user no root
+  	<rule id="103079" level="14">
+        <if_sid>80784</if_sid>
+        <field name="audit.command">^bash$</field>
+        <field name="audit.key">^bashrc-user-r$</field>
+        <description>ATENCIÓN. Lectura de /etc/bash.bashrc, User ID $(audit.auid) </description>
+    </rule>
+  
+el montado con samba lo detecta shadow en la lectura por parte del demonio de samba
+<rule id="103080" level="14">
+    <if_sid>80784</if_sid>
+    <field name="audit.command">^smbd$</field>
+    <field name="audit.exe">^/usr/sbin/smbd$</field>
+    <field name="audit.key">^audit-shadow-r$</field>
+    <description>Acceso a Directorio compartido a través de smb</description>
+  </rule>
+  
+
+error en el intento de escritura en rc.local
+ <rule id="103081" level="15">
+    <if_sid>80781</if_sid>
+    <field name="audit.key">^audit-rc-w$</field>
+    <field name="audit.exit">^-13$</field>
+    <description>ATENCIÓN. Intetno de escritura en $(audit.file.name). Directorio $(audit.cwd), ID Usuario efectivo: $(audit.euid)</description>
+  </rule>
+  
+  Escritura en /etc/bash.bashrc
+  
+  <rule id="103082" level="0">
+    <if_sid>80781,80782</if_sid>
+    <field name="audit.key">^audit-bashrc-w$</field>
+    <field name="audit.exit">^-13|^3$</field>
+    <description>Escritura en /etc/bash.bashrc - Usuario efectivo $(audit.auid) </description>
+  </rule>
+   valores posibles, audit.exit 3 si el proceso tuvo éxito y -13 si no tuvo exito
+  <rule id="103083" level="15">
+    <if_sid>103082</if_sid>
+    <field name="audit.exit">^-13$</field>
+    <description>ATENCION. Intento de escritura en /etc/bash.bashrc - Usuario efectivo $(audit.auid) </description>
+  </rule>
+ <rule id="103084" level="15">
+    <if_sid>103082</if_sid>
+    <field name="audit.exit">^3$</field>
+    <description>ATENCION. Escritura en $(audit.file.name) - Usuario efectivo $(audit.auid) </description>
+  </rule>
+  lectura de sudoers
+	audit-sudo-r
+ <rule id="103085" level="0">
+    <if_sid>80784</if_sid>
+    <field name="audit.key">^audit-sudo-r$</field>
+    <field name="audit.exit">^-13$|^3$</field>
+    <description>Lectura en sudoers. Comando $(audit.command), Usuario efectivo $(audit.auid) </description>
+  </rule>
+ <rule id="103086" level="15">
+    <if_sid>103085</if_sid>
+    <field name="audit.exit">^-13$</field>
+    <description>ATENCION. Intento de lectura en sudoers. Comando $(audit.command), Usuario efectivo $(audit.auid) </description>
+  </rule>
+  <rule id="103087" level="15">
+    <if_sid>103085</if_sid>
+    <field name="audit.exit">^3$</field>
+    <description>Lectura en sudoers. Comando $(audit.command), Usuario efectivo $(audit.auid) </description>
+  </rule>
+
+   <rule id="103088" level="15">
+    <if_sid>80784</if_sid>
+    <field name="audit.key">^audit-bashrc-r$</field>
+    <description>ATENCION. Lectura en $(audit.file.name) Comando $(audit.command) ejecutado</description>
+  </rule>
+  
+  audit-issue-r
+   <rule id="103089" level="15">
+    <if_sid>80784</if_sid>
+    <field name="audit.key">^audit-issue-r$</field>
+    <description>ATENCION. Lectura en $(audit.file.name) Comando $(audit.command) ejecutado</description>
+  </rule>
+  <!-- bloque de los archivos de configuracion en los agentes. auditd, sysmon y wazuh-->
+  
+  <!--Lectura con el key audit-ossec-r en /var/ossec/etc/ossec.conf-->
+   <rule id="103090" level="15">
+    <if_sid>80784</if_sid>
+    <field name="audit.key">^audit-ossec-r$</field>
+    <description>ATENCION. Lectura en $(audit.file.name) Comando $(audit.command) ejecutado</description>
+  </rule>
+  <!--Escritura con el key audit-ossec-w en /var/ossec/etc/ossec.conf-->
+   <rule id="103091" level="15">
+    <if_sid>80781</if_sid>
+    <field name="audit.key">^audit-ossec-w$</field>
+    <description>ATENCION. Escritura en $(audit.file.name) Comando $(audit.command) ejecutado</description>
+  </rule>
+  
+  <!--Lectura con el key audit-sysmon-r en /opt/sysmon/config.xml-->
+   <rule id="103092" level="15">
+    <if_sid>80784</if_sid>
+    <field name="audit.key">^audit-sysmon-r$</field>
+    <description>ATENCION. Lectura en $(audit.file.name) Comando $(audit.command) ejecutado</description>
+  </rule>
+  <!--Escritura con el key audit-sysmon-w en /opt/sysmon/config.xml-->
+   <rule id="103093" level="15">
+    <if_sid>80781</if_sid>
+    <field name="audit.key">^audit-sysmon-w$</field>
+    <description>ATENCION. Escritura en $(audit.file.name) Comando $(audit.command) ejecutado</description>
+  </rule>
+  
+  <!--Lectura con el key audit-r en /etc/audit/auditd.conf-->
+   <rule id="103094" level="15">
+    <if_sid>80784</if_sid>
+    <field name="audit.key">^audit-r$</field>
+    <description>ATENCION. Lectura en $(audit.file.name) Comando $(audit.command) ejecutado</description>
+  </rule>
+  <!--Escritura con el key audit-w en /etc/audit/auditd.conf-->
+   <rule id="103095" level="15">
+    <if_sid>80781</if_sid>
+    <field name="audit.key">^audit-w$</field>
+    <description>ATENCION. Escritura en $(audit.file.name) Comando $(audit.command) ejecutado</description>
+  </rule>
+  
+  <!--Escritura con el key audit-rules-w en /etc/audit/rules.d/audit.rules-->
+   <rule id="103096" level="15">
+    <if_sid>80781</if_sid>
+    <field name="audit.key">^audit-rules-w$</field>
+    <description>ATENCION. Escritura en $(audit.file.name) Comando $(audit.command) ejecutado</description>
+  </rule>
+  <!--Escritura con el key audit-sudoe-w en /etc/sudoers.d/README-->
+   <rule id="103097" level="15">
+    <if_sid>80781</if_sid>
+    <field name="audit.key">^audit-sudoe-w$</field>
+    <field name="audit.file.name" type="pcre2" negate="yes">\.swp</field>
+    <description>ATENCION. Escritura en $(audit.file.name) Comando $(audit.command) ejecutado</description>
+  </rule>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+ 
+El comando run-parts se utiliza para ejecutar todos los scripts o programas que se encuentran en un directorio. La opción --report imprime el nombre de cada script o programa que se ejecuta, así como su salida, a la salida estándar.
+Por ejemplo, si el directorio /etc/cron.hourly contiene los siguientes scripts:
+/etc/cron.hourly/script1
+/etc/cron.hourly/script2
+El comando siguiente ejecutaría estos scripts y imprimiría su nombre y salida a la salida estándar:
+
+run-parts --report /etc/cron.hourly se muestra en el siguiente orden en las etiquetas
+audit.command:run-parts
+audit.execve.a0:run-parts
+audit.execve.a1:--report
+audit.execve.a2:/etc/cron.hourly/
+  <rule id="103101" level="0">
+    <if_sid>80792</if_sid>
+    <field name="audit.command">^run-parts$</field>
+    <field name="audit.execve.a0">^run-parts$</field>
+    <field name="audit.execve.a1">--report$</field>
+    <field name="audit.execve.a2">\.+</field>
+    <field name="audit.file.name">/usr/bin/run-parts$</field>
+    <description>Audit-Command: run-parts. audit.execve.a2</description>
+  </rule>
+  <!--sh -c-->
+  <!--<rule id="103102" level="0">-->
+  <!--  <if_sid>80792</if_sid>-->
+  <!--  <field name="audit.command">^sh$</field>-->
+  <!--  <field name="audit.execve.a0">^/bin/sh$</field>-->
+  <!--  <field name="audit.execve.a1">-c$</field>-->
+  <!--  <field name="audit.file.name">/bin/sh$</field>-->
+  <!--  <description>Audit-Command: sh -c execute</description>-->
+  <!--</rule>-->
+x11-common
+El paquete x11-common es un componente fundamental del Sistema de Ventanas X (X11) en los sistemas Linux. Proporciona la infraestructura y los archivos esenciales necesarios para instalar y ejecutar cualquier entorno de interfaz gráfica de usuario (GUI) X11.
+<rule id="103103" level="0">
+    <if_sid>80792</if_sid>
+    <field name="audit.command">^x11-common$</field>
+    <field name="audit.execve.a0">^/bin/sh$</field>
+    <field name="audit.execve.a1">/etc/init.d/x11-common$</field>
+    <field name="audit.file.name">/etc/init.d/x11-common$</field>
+    <description>Audit-Command: ver esto $(audit.command)</description>
+  </rule>
+  	readlink
+<rule id="103104" level="10">
+    <if_sid>80792</if_sid>
+    <field name="audit.command">^readlink$</field>
+    <field name="audit.execve.a0">^readlink$</field>
+    <field name="audit.execve.a1">-f$</field>
+    <field name="audit.file.name">/etc/init.d/whoopsie$</field>
+    <description>Audit-Command: ver esto $(audit.command)</description>
+  </rule>
+  
+bash.bashrc, comandos ejecutados al bash.bashrc global
+  <rule id="103105" level="15">
+    <if_sid>80792</if_sid>
+    <field name="audit.command">\.+</field>
+    <field name="audit.execve.a1">^/etc/bash.bashrc$|^bash.bashrc$</field>
+    <description>Comando $(audit.command) ejecutado en archivo global $(audit.execve.a1) (Entorno de BASH global)</description>
+  </rule>
+  
+  .bashrc (interno de cada usuario)
+  <rule id="103106" level="14">
+    <if_sid>80792</if_sid>
+    <field name="audit.command">\.+</field>
+    <field name="audit.execve.a1">^\.bashrc$</field>
+    <description>Comando $(audit.command) ejcutado en fichero $(audit.execve.a1) (Entorno de BASH del Usuario)</description>
+  </rule>
+  
+  bash-history
+  audit.execve.a1   .bash_history
+  <rule id="103107" level="15">
+    <if_sid>80792</if_sid>
+    <field name="audit.command">\.+</field>
+    <field name="audit.execve.a1">.bash_history</field>
+    <description>Comando $(audit.command) ejcutado en fichero $(audit.execve.a1)</description>
+  </rule>
+ 
+  
+  <!--usuario agregado o intento, detectado a través de ejecución de comandos useradd o adduser-->
+  Estos eventos tienen alerta nivel 14, las reglas 1040000 (^delete user) derivada de la regla 5903 (^delete user|^account deleted|^remove group) generan una alerta nivel 15 si efectivamente el usuario fué eliminado
+  En el proceso se generan muchos eventos que ya indican esto, para enfocarse exclusivamente en el intento efectivo o no de la creación de un usuario en el sistema se toma como premisa detectar los comandos del SO, useradd o adduser con un nivel de criticidad alto, así si se concreta el proceso se empiezan a generar eventos de lectura en /etc/passwd y /etc/shadow que lo confirman.
+  <rule id="103108" level="14">
+    <if_sid>80792</if_sid>
+    <field name="audit.command">adduser|useradd</field>
+    <description>ATENCIÓN. Comando $(audit.command) detectado</description>
+  </rule>
+  
+  <!--deluser, userdel command-->
+  Lo mismo en con estos procesos,si no se concreta no se ven mas eventos relacionados, caso contrario se observan eventos relacionados con /etc/shadow y cron
+  <rule id="103109" level="14">
+    <if_sid>80792</if_sid>
+    <field name="audit.command">deluser</field>
+    <description>ATENCIÓN. Comando $(audit.command) detectado</description>
+  </rule>
+  <rule id="103110" level="14">
+    <if_sid>80792</if_sid>
+    <field name="audit.command">userdel</field>
+    <description>ATENCIÓN. Comando $(audit.command) detectado</description>
+  </rule>
+  
+  cambio de grupo de usuario
+  <rule id="103111" level="3">
+    <if_sid>80792</if_sid>
+    <field name="audit.command">usermod</field>
+    <description>Comando $(audit.command) detectado</description>
+  </rule>
+ si un user ya es root, puede agregar al grupo sudo a otro user con el siguiente comando:  usermod -aG sudo nombre_usuario
+  <rule id="103112" level="15">
+    <if_sid>103111</if_sid>
+    <field name="audit.execve.a0">^usermod$</field>
+    <field name="audit.execve.a1">^-aG$</field>
+    <field name="audit.execve.a2">^sudo$</field>
+    <description>ATENCIÓN. usermod -aG sudo detectado. Usurario de destino $(audit.execve.a3)</description>
+  </rule>
+ 
+  sudo usermod -aG sudo nombre_usuario
+  <!--COMANDOS SUDO , si se utiliza el argumento sudo en un comando-->
+  <rule id="103113" level="14">
+    <if_sid>80792</if_sid>
+    <field name="audit.command">sudo</field>
+    <description>Audit command: Comando $(audit.command) detectado</description>
+  </rule>
+  
+  <!--alertar si un usuario se hace root, o intenta hacerlo-->
+  <rule id="103114" level="14">
+    <if_sid>103113</if_sid>
+    <field name="audit.execve.a0">sudo|su</field>
+    <field name="audit.execve.a1">su|-i|-</field>
+    <description>ANTENCIÓN. $(audit.execve.a0) $(audit.execve.a1) ejecutado en el sistema.</description>
+  </rule>
+
+  
+  audit command: comandos ejecutados sobre /etc/passwd
+  <rule id="103115" level="14">
+    <if_sid>80792</if_sid>
+    <field name="audit.file.name">^/etc/passwd$</field>
+    <description>ATENCIÓN. $(audit.command) ejecutado en $(audit.file.name)</description>
+  </rule>
+  
+  audit read access etc/passwd de root
+  <rule id="103116" level="15">
+    <if_sid>80792</if_sid>
+    <field name="audit.command" type="pcre2" negate="yes">^usermod$</field>
+    <field name="audit.execve.a1">^/etc/passwd$</field>
+    <field name="audit.key">^audit-root$</field>
+    <description>ATENCIÓN. $(audit.command) ejecutado en /etc/passwd por user root</description>
+  </rule>
+  
+  comandos ejecutados por un usuario no root en sshd_config, el usuario efectivo es siempre el que realiza la acción. si es 0 es root
+  <rule id="103117" level="14">
+    <if_sid>80792</if_sid>
+    <field name="audit.file.name">^sshd_config$</field>
+    <description>ATENCIÓN. $(audit.command) ejecutado en $(audit.cwd) Usuario efectivo: $(audit.euid)</description>
+  </rule>
+  
+  /var/spool user no root
+  
+
+  <rule id="103118" level="15">
+    <if_sid>80792</if_sid>
+    <field name="audit.command" type="pcre2" negate="yes">^chfn$</field>
+    <field name="audit.cwd">^/var/spool$</field>
+    <description>ATENCIÓN. Comando $(audit.command) ejecutado en $(audit.cwd)</description>
+  </rule>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  5402 del fichero 0020-syslog-rules
+   <rule id="5402" level="14" overwrite="yes">
+    <if_sid>5400</if_sid>
+    <regex> ; USER=root ; COMMAND=| ; USER=root ; TSID=\S+ ; COMMAND=</regex>
+    <description>Successful sudo to ROOT executed.</description>
+    <mitre>
+      <id>T1548.003</id>
+    </mitre>
+    <group>pci_dss_10.2.5,pci_dss_10.2.2,gpg13_7.6,gpg13_7.8,gpg13_7.13,gdpr_IV_32.2,hipaa_164.312.b,nist_800_53_AU.14,nist_800_53_AC.7,nist_800_53_AC.6,tsc_CC6.8,tsc_CC7.2,tsc_CC7.3,</group>
+  </rule>
+  
+  Este evento se genera luego de ejecutar con exito el comando usermod -aG sudo usuario-1
+  <rule id="103114" level="15">
+    <if_sid>5402</if_sid>
+    <field name="command">/usr/sbin/usermod -aG sudo</field>
+    <description>ATENCIÓN. usermod -aG sudo executado con éxito</description>
+  </rule>
+  <rule id="103115" level="15">
+    <if_sid>5402</if_sid>
+    <field name="command">/usr/sbin/usermod -aG wheel</field>
+    <description>ATENCIÓN. usermod -aG wheel executado con éxito</description>
+  </rule>
+  
+  APARTADO: Cuando un usuario inicia sesion o cambia de sesion se genera un evento 5501 PAM: Login sesion opened.
+  Como se sabe, hay varias maneras de hacerlo como tambien varios posibles casos, pero si se inicia sesión como root en determinado momento, es importante tener en cuenta e ir mirando el comportamiento desde este punto. En el caso de que un usuario no inicie sesion como root, podrá seguir utilizando altos privilegios solo indicando el argumento sudo en cada comando, para lo cual ya existe la regla 103069
+  Si ese inicio de sesión tiene como destino a root, generar la siguiente alerta
+  <rule id="103116" level="14">
+    <if_sid>5501</if_sid>
+    <match>session opened for user root(uid=0)</match>
+    <description>ATENCIÓN. Sesión ROOT iniciada por usuario $(srcuser)</description>
+  </rule>
+  
+  iniciar servicios
+  rule 80792 de audit command
+   <rule id="103117" level="14">
+    <if_sid>80792</if_sid>
+    <field name="audit.command">systemctl|service</field>
+    <description>Manipulación de servicios, verificar comando $(audit.command) utilizado</description>
+   </rule>
+   start
+   <rule id="103118" level="14">
+    <if_sid>103117</if_sid>
+    <field name="audit.execve.a1">^start$</field>
+    <description> $(audit.execve.a0) $(audit.execve.a1) $(audit.execve.a2) ejecutado</description>
+  </rule>
+  enable
+  <rule id="103119" level="14">
+    <if_sid>103117</if_sid>
+    <field name="audit.execve.a1">^enable$</field>
+    <description>$(audit.execve.a0) $(audit.execve.a1) $(audit.execve.a2) ejcutado</description>
+  </rule>
+  
+  
+  	bashrc-global-w
+   <rule id="103120" level="15">
+    <if_sid>80781</if_sid>
+    <field name="audit.key">^bashrc-global-w$</field>
+    <description>ATENCION. Escritura en $(audit.file.name)</description>
+  </rule>
+  
+  
+  
+  
+  
+  
+  
+  
+</group>
+
+
+<!-- Cron messages -->
+<group name="syslog,cron,">
+  <rule id="2830" level="0">
+    <program_name>crond|crontab</program_name>
+    <description>Crontab rule group.</description>
+  </rule>
+
+  <rule id="2831" level="0">
+    <if_sid>2830</if_sid>
+    <match>^unable to exec</match>
+    <description>Wrong crond configuration.</description>
+  </rule>
+
+  <rule id="2834" level="5">
+    <if_sid>2830</if_sid>
+    <match>BEGIN EDIT</match>
+    <description>Crontab opened for editing.</description>
+  </rule>
+
+  <rule id="2832" level="14" overwrite="yes">
+    <if_sid>2830</if_sid>
+    <match>REPLACE</match>
+    <description>Crontab entry changed.</description>
+    <group>pci_dss_10.2.7,pci_dss_10.6.1,gpg13_4.13,gdpr_IV_35.7.d,hipaa_164.312.b,nist_800_53_AU.14,nist_800_53_AU.6,tsc_CC6.8,tsc_CC7.2,tsc_CC7.3,</group>
+  </rule>
+
+  <rule id="2833" level="14" overwrite="yes">
+    <if_sid>2832</if_sid>
+    <match>REPLACE (root)</match>
+    <description>Root's crontab entry changed.</description>
+    <mitre>
+      <id>T1053.003</id>
+    </mitre>
+    <group>pci_dss_10.2.7,pci_dss_10.6.1,pci_dss_10.2.2,gpg13_4.13,gdpr_IV_35.7.d,gdpr_IV_32.2,hipaa_164.312.b,nist_800_53_AU.14,nist_800_53_AU.6,nist_800_53_AC.6,tsc_CC6.8,tsc_CC7.2,tsc_CC7.3,</group>
+  </rule>
+  
+  
+  <!--regla del fichero 0095-sshd-rules-->
+  <rule id="5715" level="15" overwrite="yes">
+    <if_sid>5700</if_sid>
+    <match>^Accepted password|authenticated.$</match>
+    <description>SSH: Autenticación exitosa desde IP: $(srcip) Usuario destino: $(dstuser)</description>
+    <mitre>
+      <id>T1078</id>
+      <id>T1021</id>
+    </mitre>
+    <group>authentication_success,gdpr_IV_32.2,gpg13_7.1,gpg13_7.2,hipaa_164.312.b,nist_800_53_AU.14,nist_800_53_AC.7,pci_dss_10.2.5,tsc_CC6.8,tsc_CC7.2,tsc_CC7.3,</group>
+  </rule>
+
+<!--En el caso de una llave pública utilizada para la conexión-->
+<!--Accepted publickey for prueba from 192.168.100.42 port 36340 ssh2: RSA SHA256:JC7URBRqJqe+a/G43WYBQRL9SSopYuHbAoAxetmbNCM-->
+  <rule id="103053" level="14">
+    <if_sid>5700</if_sid>
+    <match>^Accepted publickey</match>
+    <description>SSH: Autenticación exitosa con clave pública desde IP: $(srcip)</description>
+    <mitre>
+      <id>T1078</id>
+      <id>T1021</id>
+    </mitre>
+    <group>authentication_success,gdpr_IV_32.2,gpg13_7.1,gpg13_7.2,hipaa_164.312.b,nist_800_53_AU.14,nist_800_53_AC.7,pci_dss_10.2.5,tsc_CC6.8,tsc_CC7.2,tsc_CC7.3,</group>
+  </rule>
+  
+  <!--deteccion de creacion de autorized_keys-->
+  <!--<rule id="103055" level="15">-->
+  <!--  <if_sid>103000</if_sid>-->
+  <!--  <field name="audit.cwd">.ssh$</field>-->
+  <!--  <description>Acceso a directorio .ssh</description>-->
+  <!--</rule>-->
+  
+  <!--<rule id="103056" level="15">-->
+  <!--  <if_sid>103000</if_sid>-->
+  <!--  <field name="audit.execve.a1">authorized_keys</field>-->
+  <!--  <description>Acceso a autorized_keys</description>-->
+  <!--</rule>-->
+  
+</group> <!-- SYSLOG,CRON -->
