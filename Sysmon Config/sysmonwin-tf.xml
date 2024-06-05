@@ -756,7 +756,7 @@
         <DestinationPort name="technique_id=T1021,technique_name=Remote Services" condition="is">5900</DestinationPort>
         <Image name="technique_id=T1569.002,technique_name=Service Execution" condition="image">psexec.exe</Image>
         <Image name="technique_id=T1569.002,technique_name=Service Execution" condition="image">psexesvc.exe</Image>
-        <Image name="technique_id=T1036,technique_name=Masquerading" condition="begin with">C:\</Image><!--  -->
+        <Image name="technique_id=T1036,technique_name=Masquerading" condition="begin with">C:\</Image><!-- Detectar todas las conexiones del sistema a través de la red -->
         <Image name="technique_id=T1036,technique_name=Masquerading" condition="begin with">C:\Users</Image>
         <Image name="technique_id=T1036,technique_name=Masquerading" condition="begin with">C:\ProgramData</Image>
         <Image name="technique_id=T1036,technique_name=Masquerading" condition="begin with">C:\Windows\Temp</Image>
@@ -800,6 +800,11 @@
         <Image condition="is">C:\Windows\System32\dns.exe</Image><!--3.5-->
         <Image condition="is">C:\Program Files (x86)\Fortinet\FSAE\collectoragent.exe</Image><!--280-->
         <Image condition="is">C:\Program Files (x86)\GFI\LanGuard 12 Agent\lnsscomm.exe</Image><!---->
+        <Image condition="is">C:\Program Files (x86)\GFI\LanGuard 12 Agent\lnssatt.exe</Image><!---->
+        <Image condition="is">C:\Program Files (x86)\GFI\LanGuard 12 Agent\Httpd\bin\httpd.exe</Image><!---->
+        <Image condition="is">C:\Program Files (x86)\GFI\LanGuard 12\lnssprocessorservice.exe</Image><!---->
+        <Image condition="is">C:\Program Files (x86)\ossec-agent\wazuh-agent.exe</Image><!---->
+        <Image condition="begin with">C:\Program Files\Kaspersky Lab\</Image><!---->
         <Image condition="begin with">C:\Program Files (x86)\Kaspersky Lab\</Image> <!---->
         <Image condition="contains all">C:\Users\;\AppData\Local\DBeaver\dbeaver.exe</Image><!--79-->
         <Image condition="contains all">C:\Users\;\AppData\Local\slack\app;\slack.exe</Image><!--3-->
@@ -1013,6 +1018,10 @@
     <!-- Event ID 7 == Image Loaded - Excludes -->
     <RuleGroup groupRelation="or">
       <ImageLoad onmatch="exclude">
+        <Rule groupRelation="and">
+          <Image condition="is">C:\Program Files (x86)\Kaspersky Lab\NetworkAgent\vapm.exe</Image><!---->
+          <OriginalFileName condition="is">vlns3_engine.dll</OriginalFileName>
+        </Rule>
         <Rule groupRelation="and">
           <Image condition="is">C:\Windows\System32\cscript.exe</Image>
           <OriginalFileName condition="is">scrobj.dll</OriginalFileName>
