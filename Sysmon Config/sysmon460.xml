@@ -796,6 +796,7 @@
     <!-- Event ID 3 == Network Connection - Excludes -->
     <RuleGroup groupRelation="or">
       <NetworkConnect onmatch="exclude">
+        <Image condition="begin with">C:\ProgramData\Microsoft\Windows Defender\Platform\</Image><!---->
         <Image condition="end with">AppData\Roaming\Dropbox\bin\Dropbox.exe</Image>
         <Image condition="end with">winlogbeat.exe</Image>
         <Image condition="end with">packetbeat.exe</Image>

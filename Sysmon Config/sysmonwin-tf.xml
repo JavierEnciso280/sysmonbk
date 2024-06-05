@@ -809,6 +809,8 @@
         <Image condition="contains all">C:\Users\;\AppData\Local\DBeaver\dbeaver.exe</Image><!--79-->
         <Image condition="contains all">C:\Users\;\AppData\Local\slack\app;\slack.exe</Image><!--3-->
         <Image condition="contains all">C:\Program Files\WindowsApps\;\Spotify.exe</Image><!--3-->
+        <Image condition="begin with">C:\ProgramData\Microsoft\Windows Defender\Platform\</Image><!---->
+        <Image condition="end with">\AppData\Local\Microsoft\Teams\current\Teams.exe</Image><!---->
         <Image condition="end with">AppData\Roaming\Dropbox\bin\Dropbox.exe</Image>
         <Image condition="end with">winlogbeat.exe</Image>
         <Image condition="end with">packetbeat.exe</Image>
