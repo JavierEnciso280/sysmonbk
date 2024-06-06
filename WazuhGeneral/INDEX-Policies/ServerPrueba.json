@@ -1,0 +1,50 @@
+{
+    "id": "deleteAfter60",
+    "seqNo": 0,
+    "primaryTerm": 1,
+    "policy": {
+        "policy_id": "deleteAfter60",
+        "description": "A sample description of the policy",
+        "last_updated_time": 1717625344956,
+        "schema_version": 18,
+        "error_notification": null,
+        "default_state": "Estado Caliente",
+        "states": [
+            {
+                "name": "Inicial",
+                "actions": [],
+                "transitions": [
+                    {
+                        "state_name": "Estado Caliente",
+                        "conditions": {
+                            "min_index_age": "60d"
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "Estado Caliente",
+                "actions": [
+                    {
+                        "retry": {
+                            "count": 3,
+                            "backoff": "exponential",
+                            "delay": "1m"
+                        },
+                        "delete": {}
+                    }
+                ],
+                "transitions": []
+            }
+        ],
+        "ism_template": [
+            {
+                "index_patterns": [
+                    "wazuh-alerts-*"
+                ],
+                "priority": 1,
+                "last_updated_time": 1717625344943
+            }
+        ]
+    }
+}

@@ -1,10 +1,7 @@
 <Sysmon schemaversion="4.60">
   <HashAlgorithms>*</HashAlgorithms>
-  <!-- This now also determines the file names of the files preserved (String) -->
   <CheckRevocation>False</CheckRevocation>
-  <!-- Setting this to true might impact performance -->
   <DnsLookup>False</DnsLookup>
-  <!-- Disables lookup behavior, default is True (Boolean) -->
   <EventFiltering>
     <!-- Event ID 1 == Process Creation - Includes -->
     <RuleGroup groupRelation="or">
@@ -1242,41 +1239,38 @@
     <!-- Event ID 11 == FileCreate - Includes -->
     <RuleGroup groupRelation="or">
       <FileCreate onmatch="include">
-        <TargetFilename name="technique_id=T1546.011,technique_name=Application Shimming" condition="contains">C:\Windows\AppPatch\Custom</TargetFilename>
+        <Image condition="image">rundll32.exe</Image>
+        <Image condition="image">taskmgr.exe</Image>
+        <TargetFilename condition="end with">.rwz</TargetFilename>
+        <TargetFilename condition="end with">.exe</TargetFilename>
         <TargetFilename condition="end with">.bat</TargetFilename>
         <TargetFilename condition="end with">.cmd</TargetFilename>
-        <TargetFilename name="Memory dump file" condition="end with">.mem</TargetFilename><!--  -->
-        <TargetFilename name="Memory dump file" condition="end with">.raw</TargetFilename><!--  -->
-        <TargetFilename name="technique_id=T1064,technique_name=Scripting" condition="end with">.chm</TargetFilename>
-        <TargetFilename condition="begin with">C:\Users\Default</TargetFilename>
-        <TargetFilename condition="contains">Desktop</TargetFilename>
-        <TargetFilename name="technique_id=T1218,technique_name=Office Signed Binary Proxy Execution" condition="contains">AppData\Local\Microsoft\CLR_v2.0\UsageLogs\</TargetFilename>
-        <TargetFilename name="technique_id=T1218,technique_name=Office Signed Binary Proxy Execution" condition="end with">\UsageLogs\cscript.exe.log</TargetFilename>
-        <TargetFilename name="technique_id=T1218,technique_name=Office Signed Binary Proxy Execution" condition="end with">\UsageLogs\wscript.exe.log</TargetFilename>
-        <TargetFilename name="technique_id=T1218,technique_name=Office Signed Binary Proxy Execution" condition="end with">\UsageLogs\wmic.exe.log</TargetFilename>
-        <TargetFilename name="technique_id=T1218,technique_name=Office Signed Binary Proxy Execution" condition="end with">\UsageLogs\mshta.exe.log</TargetFilename>
-        <TargetFilename name="technique_id=T1218,technique_name=Office Signed Binary Proxy Execution" condition="end with">\UsageLogs\svchost.exe.log</TargetFilename>
-        <TargetFilename name="technique_id=T1218,technique_name=Office Signed Binary Proxy Execution" condition="end with">\UsageLogs\regsvr32.exe.log</TargetFilename>
-        <TargetFilename name="technique_id=T1218,technique_name=Office Signed Binary Proxy Execution" condition="end with">\UsageLogs\rundll32.exe.log</TargetFilename>
-        <TargetFilename condition="contains">\Downloads\</TargetFilename>
-        <TargetFilename condition="begin with">C:\Windows\System32\Drivers</TargetFilename>
-        <TargetFilename condition="begin with">C:\Windows\SysWOW64\Drivers</TargetFilename>
-        <TargetFilename condition="end with">.exe</TargetFilename>
-        <TargetFilename condition="begin with">C:\Windows\System32\GroupPolicy\Machine\Scripts</TargetFilename>
-        <TargetFilename condition="begin with">C:\Windows\System32\GroupPolicy\User\Scripts</TargetFilename>
-        <TargetFilename name="technique_id=T1218.005,technique_name=Mshta" condition="end with">.hta</TargetFilename>
+        <TargetFilename condition="end with">.com</TargetFilename>
+        <TargetFilename condition="end with">.vbs</TargetFilename>
+        <TargetFilename condition="end with">.vbe</TargetFilename>
+        <TargetFilename condition="end with">.js</TargetFilename>
+        <TargetFilename condition="end with">.jse</TargetFilename>
+        <TargetFilename condition="end with">.wsf</TargetFilename>
+        <TargetFilename condition="end with">.wsh</TargetFilename>
+        <TargetFilename condition="end with">ps1</TargetFilename>
+        <TargetFilename condition="end with">ps2</TargetFilename>
+        <TargetFilename condition="end with">ps1xml</TargetFilename>
+        <TargetFilename condition="end with">psc1</TargetFilename>
+        <TargetFilename condition="end with">psd1</TargetFilename>
+        <TargetFilename condition="end with">msh</TargetFilename>
+        <TargetFilename condition="end with">msh1</TargetFilename>
+        <TargetFilename condition="end with">msh2</TargetFilename>
+        <TargetFilename condition="end with">mshxml</TargetFilename>
+        <TargetFilename condition="end with">msh1xml</TargetFilename>
+        <TargetFilename condition="end with">msh2xml</TargetFilename>
+        <TargetFilename condition="end with">.hta</TargetFilename>
+        <TargetFilename condition="end with">.cpl</TargetFilename>
+        <TargetFilename condition="end with">.msc</TargetFilename>
+        <TargetFilename condition="end with">.dll</TargetFilename>
+        <TargetFilename condition="end with">.scr</TargetFilename>
         <TargetFilename condition="end with">.iso</TargetFilename>
         <TargetFilename condition="end with">.img</TargetFilename>
-        <TargetFilename name="technique_id=T1059.007,technique_name=JavaScript" condition="end with">.js</TargetFilename>
-        <TargetFilename name="technique_id=T1059.007,technique_name=JavaScript" condition="end with">.javascript</TargetFilename>
         <TargetFilename condition="end with">.kirbi</TargetFilename>
-        <TargetFilename name="technique_id=T1187,technique_name=Forced Authentication" condition="end with">.lnk</TargetFilename>
-        <TargetFilename name="technique_id=T1187,technique_name=Forced Authentication" condition="end with">.scf</TargetFilename>
-        <TargetFilename condition="end with">.application</TargetFilename>
-        <TargetFilename condition="end with">.appref-ms</TargetFilename>
-        <TargetFilename name="technique_id=T1127,technique_name=Trusted Developer Utilities Proxy Execution" condition="end with">.*proj</TargetFilename>
-        <TargetFilename name="technique_id=T1127,technique_name=Trusted Developer Utilities Proxy Execution" condition="end with">.sln</TargetFilename>
-        <TargetFilename condition="end with">.settingcontent-ms</TargetFilename>
         <TargetFilename condition="end with">.docm</TargetFilename>
         <TargetFilename condition="end with">.pptm</TargetFilename>
         <TargetFilename condition="end with">.xlsm</TargetFilename>
@@ -1290,10 +1284,6 @@
         <TargetFilename condition="end with">.xla</TargetFilename>
         <TargetFilename condition="end with">.iqy</TargetFilename>
         <TargetFilename condition="end with">.slk</TargetFilename>
-        <TargetFilename condition="contains">\Content.Outlook\</TargetFilename>
-        <TargetFilename condition="contains">Roaming\Microsoft\Outlook\VbaProject.OTM</TargetFilename>
-        <TargetFilename condition="end with">.rwz</TargetFilename>
-        <TargetFilename condition="contains">Roaming\Microsoft\Outlook\Outlook.xml</TargetFilename>
         <TargetFilename condition="end with">.rft</TargetFilename>
         <TargetFilename condition="end with">.jsp</TargetFilename>
         <TargetFilename condition="end with">.jspx</TargetFilename>
@@ -1302,33 +1292,54 @@
         <TargetFilename condition="end with">.php</TargetFilename>
         <TargetFilename condition="end with">.war</TargetFilename>
         <TargetFilename condition="end with">.ace</TargetFilename>
-        <TargetFilename name="technique_id=T1059.001,technique_name=PowerShell" condition="begin with">C:\Windows\System32\WindowsPowerShell</TargetFilename>
-        <TargetFilename name="technique_id=T1059.001,technique_name=PowerShell" condition="begin with">C:\Windows\SysWOW64\WindowsPowerShell</TargetFilename>
-        <TargetFilename name="technique_id=T1059.001,technique_name=PowerShell" condition="end with">.ps1</TargetFilename>
-        <TargetFilename name="technique_id=T1059.001,technique_name=PowerShell" condition="end with">.ps2</TargetFilename>
+        <TargetFilename condition="end with">.application</TargetFilename>
+        <TargetFilename condition="end with">.appref-ms</TargetFilename>
         <TargetFilename condition="end with">.py</TargetFilename>
         <TargetFilename condition="end with">.pyc</TargetFilename>
         <TargetFilename condition="end with">.pyw</TargetFilename>
-        <Image condition="image">rundll32.exe</Image>
+        <TargetFilename condition="end with">.url</TargetFilename>
+        <TargetFilename condition="end with">.vb</TargetFilename>
+        <TargetFilename name="Memory dump file" condition="end with">.mem</TargetFilename><!--  -->
+        <TargetFilename name="Memory dump file" condition="end with">.raw</TargetFilename><!--  -->
+        <TargetFilename condition="end with">.settingcontent-ms</TargetFilename>
+        <TargetFilename condition="contains">\*lsass*.dmp\</TargetFilename>
+        <TargetFilename name="technique_id=T1064,technique_name=Scripting" condition="end with">.chm</TargetFilename>
+        <TargetFilename name="technique_id=T1127,technique_name=Trusted Developer Utilities Proxy Execution" condition="end with">.*proj</TargetFilename>
+        <TargetFilename name="technique_id=T1127,technique_name=Trusted Developer Utilities Proxy Execution" condition="end with">.sln</TargetFilename>
+        <TargetFilename name="technique_id=T1187,technique_name=Forced Authentication" condition="end with">.lnk</TargetFilename>
+        <TargetFilename name="technique_id=T1187,technique_name=Forced Authentication" condition="end with">.scf</TargetFilename>
+        <TargetFilename name="technique_id=T1059.007,technique_name=JavaScript" condition="end with">.javascript</TargetFilename>
+        <TargetFilename condition="begin with">C:\Users\Default</TargetFilename>
+        <TargetFilename condition="contains">\Downloads\</TargetFilename>
+        <TargetFilename condition="contains">Desktop</TargetFilename>
+        <TargetFilename name="technique_id=T1546.011,technique_name=Application Shimming" condition="contains">C:\Windows\AppPatch\Custom</TargetFilename>
+        <TargetFilename name="technique_id=T1218,technique_name=Office Signed Binary Proxy Execution" condition="contains">AppData\Local\Microsoft\CLR_v2.0\UsageLogs\</TargetFilename>
+        <TargetFilename name="technique_id=T1218,technique_name=Office Signed Binary Proxy Execution" condition="end with">\UsageLogs\cscript.exe.log</TargetFilename>
+        <TargetFilename name="technique_id=T1218,technique_name=Office Signed Binary Proxy Execution" condition="end with">\UsageLogs\wscript.exe.log</TargetFilename>
+        <TargetFilename name="technique_id=T1218,technique_name=Office Signed Binary Proxy Execution" condition="end with">\UsageLogs\wmic.exe.log</TargetFilename>
+        <TargetFilename name="technique_id=T1218,technique_name=Office Signed Binary Proxy Execution" condition="end with">\UsageLogs\mshta.exe.log</TargetFilename>
+        <TargetFilename name="technique_id=T1218,technique_name=Office Signed Binary Proxy Execution" condition="end with">\UsageLogs\svchost.exe.log</TargetFilename>
+        <TargetFilename name="technique_id=T1218,technique_name=Office Signed Binary Proxy Execution" condition="end with">\UsageLogs\regsvr32.exe.log</TargetFilename>
+        <TargetFilename name="technique_id=T1218,technique_name=Office Signed Binary Proxy Execution" condition="end with">\UsageLogs\rundll32.exe.log</TargetFilename>
+        <TargetFilename condition="begin with">C:\Windows\System32\Drivers</TargetFilename>
+        <TargetFilename condition="begin with">C:\Windows\SysWOW64\Drivers</TargetFilename>
+        <TargetFilename condition="begin with">C:\Windows\System32\GroupPolicy\Machine\Scripts</TargetFilename>
+        <TargetFilename condition="begin with">C:\Windows\System32\GroupPolicy\User\Scripts</TargetFilename>
+        <TargetFilename condition="contains">\Content.Outlook\</TargetFilename>
+        <TargetFilename condition="contains">Roaming\Microsoft\Outlook\VbaProject.OTM</TargetFilename>
+        <TargetFilename condition="contains">Roaming\Microsoft\Outlook\Outlook.xml</TargetFilename>
+        <TargetFilename name="technique_id=T1059.001,technique_name=PowerShell" condition="begin with">C:\Windows\System32\WindowsPowerShell</TargetFilename>
+        <TargetFilename name="technique_id=T1059.001,technique_name=PowerShell" condition="begin with">C:\Windows\SysWOW64\WindowsPowerShell</TargetFilename> 
         <TargetFilename condition="begin with">C:\Windows\System32\Tasks</TargetFilename>
         <TargetFilename condition="begin with">C:\Windows\Tasks\</TargetFilename>
         <TargetFilename condition="contains">\Start Menu</TargetFilename>
         <TargetFilename condition="contains">\Startup</TargetFilename>
         <Image condition="excludes all">C:\Users\;\AppData\Local\slack\app;\slack.exe</Image> <!---->
         <Image condition="excludes all">C:\Program Files (x86)\GFI\LanGuard;12;Agent\lnssatt.exe</Image>  <!---->
-        <TargetFilename condition="is">C:\Program Files (x86)\ossec-agent\wazuh-agent.state</TargetFilename><!--1.5-->
-        <TargetFilename condition="is">C:\Program Files (x86)\ossec-agent\queue\logcollector\file_status.json</TargetFilename><!--120-->
-        <TargetFilename condition="is">C:\Program Files (x86)\ossec-agent\wazuh-logcollector.state</TargetFilename><!--129-->
         <TargetFilename name="technique_id=T1044,technique_name=File System Permissions Weakness" condition="begin with">C:\Windows\SysWoW64</TargetFilename>
         <TargetFilename name="technique_id=T1047,technique_name=File System Permissions Weakness" condition="begin with">C:\Windows\System32</TargetFilename>
         <TargetFilename name="technique_id=T1047,technique_name=File System Permissions Weakness" condition="begin with">C:\Windows\</TargetFilename>
         <TargetFilename condition="end with">.sys</TargetFilename>
-        <TargetFilename condition="contains">\*lsass*.dmp\</TargetFilename>
-        <Image condition="image">taskmgr.exe</Image>
-        <TargetFilename condition="end with">.url</TargetFilename>
-        <TargetFilename condition="end with">.vb</TargetFilename>
-        <TargetFilename condition="end with">.vbe</TargetFilename>
-        <TargetFilename condition="end with">.vbs</TargetFilename>
         <Rule groupRelation="and">
           <TargetFilename name="technique_id=T1562.001,technique_name=Disable or Modify tools" condition="begin with">C:\Windows\System32\CodeIntegrity\CIPolicies\Active\</TargetFilename>
           <TargetFilename name="technique_id=T1562.001,technique_name=Disable or Modify tools" condition="end with">.cip</TargetFilename>
@@ -1351,10 +1362,6 @@
     <!-- Event ID 11 == FileCreate - Excludes -->
     <RuleGroup groupRelation="or">
       <FileCreate onmatch="exclude">
-        <Rule groupRelation="and">
-          <Image condition="is">C:\Program Files (x86)\ossec-agent\wazuh-agent.exe</Image><!-- 9/5/2024 -->
-          <TargetFilename condition="contains all">C:\Windows\Temp\etilqs;</TargetFilename>
-        </Rule>
         <Rule groupRelation="and">
           <Image condition="is">System</Image>
           <TargetFilename condition="contains all">C:\Windows\Logs\WindowsUpdate\WindowsUpdate;.etl</TargetFilename><!--  -->
@@ -1387,6 +1394,7 @@
           <Image condition="contains all">C:\Windows\;\WindowsPowerShell\v1.0\powershell.exe</Image>
           <TargetFilename condition="contains all">C:\Users\;\AppData\Local\Temp\__PSScriptPolicyTest;.ps1</TargetFilename><!-- -->
         </Rule>
+        <Image condition="is">C:\Program Files (x86)\ossec-agent\wazuh-agent.exe</Image><!-- 9/5/2024 -->
         <Image condition="begin with">C:\Program Files (x86)\Kaspersky Lab\</Image>  <!---->
         <Image condition="contains all">C:\Program Files (x86)\Kaspersky Lab\;\avpsus.exe</Image>  <!---->
         <Image condition="is">C:\Program Files (x86)\Kaspersky Lab\NetworkAgent\Up2Date.exe</Image>  <!---->
@@ -1413,13 +1421,20 @@
         <Image condition="is">C:\Windows\System32\smss.exe</Image>
         <Image condition="is">C:\Windows\system32\CompatTelRunner.exe</Image>
         <Image condition="is">C:\Windows\system32\wbem\WMIADAP.EXE</Image>
+        <Image condition="begin with">C:\WINDOWS\winsxs\amd64_microsoft-windows</Image>
+        <Image condition="is">c:\Program Files\Microsoft Security Client\MsMpEng.exe</Image>
+        <TargetFilename condition="is">C:\Program Files (x86)\ossec-agent\wazuh-agent.state</TargetFilename><!--1.5-->
+        <TargetFilename condition="is">C:\Program Files (x86)\ossec-agent\queue\logcollector\file_status.json</TargetFilename><!--120-->
+        <TargetFilename condition="is">C:\Program Files (x86)\ossec-agent\wazuh-logcollector.state</TargetFilename><!--129-->
         <TargetFilename condition="begin with">C:\Windows\System32\DriverStore\Temp\</TargetFilename>
         <TargetFilename condition="begin with">C:\Windows\System32\wbem\Performance\</TargetFilename>
         <TargetFilename condition="end with">WRITABLE.TST</TargetFilename>
         <TargetFilename condition="contains">\AppData\Roaming\Microsoft\Windows\Recent\</TargetFilename>
         <TargetFilename condition="begin with">C:\$WINDOWS.~BT\Sources\SafeOS\SafeOS.Mount\</TargetFilename>
-        <Image condition="begin with">C:\WINDOWS\winsxs\amd64_microsoft-windows</Image>
-        <Image condition="is">c:\Program Files\Microsoft Security Client\MsMpEng.exe</Image>
+        <TargetFilename condition="end with">.tmp</TargetFilename> <!---->
+        <TargetFilename condition="end with">.TMP</TargetFilename> <!---->
+        <TargetFilename condition="end with">.ldb</TargetFilename> <!---->
+        <TargetFilename condition="end with">~tmp</TargetFilename> <!---->
         <Rule groupRelation="and">
           <Image condition="image">Outlook.exe</Image>
           <TargetFilename condition="contains">Roaming\Microsoft\Outlook\Outlook.xml</TargetFilename>
