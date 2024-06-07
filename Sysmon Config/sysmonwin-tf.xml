@@ -1019,6 +1019,14 @@
       <ImageLoad onmatch="exclude">
         <Rule groupRelation="and">
           <Image condition="is">C:\Program Files (x86)\Kaspersky Lab\NetworkAgent\vapm.exe</Image><!---->
+          <OriginalFileName condition="is">taskschd.dll</OriginalFileName>
+        </Rule>
+        <Rule groupRelation="and">
+          <Image condition="is">C:\Program Files (x86)\Microsoft\EdgeUpdate\MicrosoftEdgeUpdate.exe</Image><!---->
+          <OriginalFileName condition="is">taskschd.dll</OriginalFileName>
+        </Rule>
+        <Rule groupRelation="and">
+          <Image condition="is">C:\Program Files (x86)\Kaspersky Lab\KES.12.3.0\avp.exe</Image><!---->
           <OriginalFileName condition="is">vlns3_engine.dll</OriginalFileName>
         </Rule>
         <Rule groupRelation="and">
@@ -1064,6 +1072,7 @@
       <!--Default to log all and exclude a few common processes-->
       <CreateRemoteThread onmatch="exclude">
         <SourceImage condition="is">C:\Windows\System32\svchost.exe</SourceImage>
+        <SourceImage condition="is">C:\Program Files (x86)\ossec-agent\wazuh-agent.exe</SourceImage>
         <SourceImage condition="is">C:\Windows\System32\wininit.exe</SourceImage>
         <SourceImage condition="is">C:\Windows\System32\csrss.exe</SourceImage>
         <SourceImage condition="is">C:\Windows\System32\services.exe</SourceImage>
@@ -1412,7 +1421,7 @@
         </Rule>
         <Image condition="is">C:\Program Files\Fortinet\FortiClient\update_task.exe</Image>
         <Image condition="is">C:\Program Files (x86)\ossec-agent\wazuh-agent.exe</Image><!-- 9/5/2024 -->
-        <Image condition="begin with">C:\Program Files (x86)\Kaspersky Lab\</Image>  <!---->
+        <Image condition="contains">C:\Program Files (x86)\Kaspersky Lab\</Image>  <!---->
         <Image condition="contains all">C:\Program Files (x86)\Kaspersky Lab\;\avpsus.exe</Image>  <!---->
         <Image condition="is">C:\Program Files (x86)\Kaspersky Lab\NetworkAgent\Up2Date.exe</Image>  <!---->
         <Image condition="is">C:\Program Files (x86)\Kaspersky Lab\Kaspersky Security Center\klnagent.exe</Image>  <!---->
@@ -1423,7 +1432,7 @@
         <Image condition="is">C:\Program Files (x86)\Kaspersky Lab\NetworkAgent\vapm.exe</Image>  <!---->
         <Image condition="is">C:\Program Files (x86)\Kaspersky Lab\Kaspersky Security for Virtualization 5.2 Light Agent\avp.exe</Image>  <!---->
         <Image condition="contains">:\Program Files (x86)\Kaspersky Lab\Kaspersky Security for Windows Server\kavfs.exe</Image>  <!---->
-        <Image condition="is">C:\\Program Files (x86)\Kaspersky Lab\KES.12.3.0\avp.exe</Image>  <!---->
+        <Image condition="is">C:\Program Files (x86)\Kaspersky Lab\KES.12.3.0\avp.exe</Image>  <!---->
         <Image condition="is"> C:\Program Files (x86)\Kaspersky Lab\NetworkAgent\klnagent.exe</Image>  <!---->
         <Image condition="is">C:\Program Files (x86)\GFI\LanGuard 12 Agent\lnssatt.exe</Image> <!---->
         <Image condition="is">C:\Program Files (x86)\GFI\LanGuard 12 Agent\update.exe</Image> <!---->
