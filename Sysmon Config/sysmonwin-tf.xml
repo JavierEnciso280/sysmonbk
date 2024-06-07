@@ -1409,7 +1409,7 @@
         </Rule>
         <Rule groupRelation="and">
           <Image condition="contains all">C:\Windows\;\WindowsPowerShell\v1.0\powershell.exe</Image>
-          <TargetFilename condition="contains all">C:\\Windows\Temp\__PSScriptPolicyTest;.psm1</TargetFilename><!-- -->
+          <TargetFilename condition="contains all">C:\Windows\Temp\__PSScriptPolicyTest;.psm1</TargetFilename><!-- -->
         </Rule>
         <Rule groupRelation="and">
           <Image condition="contains all">C:\Windows\;\WindowsPowerShell\v1.0\powershell.exe</Image>
