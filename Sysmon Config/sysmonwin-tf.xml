@@ -1363,8 +1363,16 @@
     <RuleGroup groupRelation="or">
       <FileCreate onmatch="exclude">
         <Rule groupRelation="and">
-          <Image condition="is">System</Image>
-          <TargetFilename condition="contains all">C:\Windows\Logs\WindowsUpdate\WindowsUpdate;.etl</TargetFilename><!--  -->
+          <Image condition="contains all">C:\Windows\Microsoft.NET\Framework64\;\ngen.exe</Image>
+          <TargetFilename condition="end with">.dat</TargetFilename><!-- -->
+        </Rule>
+        <Rule groupRelation="and">
+          <Image condition="contains all">C:\Windows\Microsoft.NET\Framework\;\NGenTask.exe</Image>
+          <TargetFilename condition="end with">.dat</TargetFilename><!-- -->
+        </Rule>
+        <Rule groupRelation="and">
+          <Image condition="is">C:\Windows\System32\mousocoreworker.exe</Image>
+          <TargetFilename condition="is">C:\ProgramData\USOPrivate\UpdateStore\store.db-journal</TargetFilename><!-- 17mil -->
         </Rule>
         <Rule groupRelation="and">
           <Image condition="is">C:\Windows\system32\svchost.exe</Image>
@@ -1384,16 +1392,17 @@
         </Rule>
         <Rule groupRelation="and">
           <Image condition="contains all">C:\Windows\system32\svchost.exe</Image>
-          <TargetFilename condition="contains all">C:\Windows\System32\SleepStudy\user-not-present-trace;.etl</TargetFilename><!--estadisticas de uso de energia -->
-        </Rule>
-        <Rule groupRelation="and">
-          <Image condition="contains all">C:\Windows\system32\svchost.exe</Image>
           <TargetFilename condition="contains all">:\Windows\ServiceState\EventLog\Data\lastalive;.dat</TargetFilename><!-- -->
         </Rule>
         <Rule groupRelation="and">
           <Image condition="contains all">C:\Windows\;\WindowsPowerShell\v1.0\powershell.exe</Image>
           <TargetFilename condition="contains all">C:\Users\;\AppData\Local\Temp\__PSScriptPolicyTest;.ps1</TargetFilename><!-- -->
         </Rule>
+        <Rule groupRelation="and">
+          <Image condition="contains all">C:\Windows\;\WindowsPowerShell\v1.0\powershell.exe</Image>
+          <TargetFilename condition="contains all">C:\Users\;\AppData\Local\Temp\__PSScriptPolicyTest;.psm1</TargetFilename><!-- -->
+        </Rule>
+        <Image condition="is">C:\Program Files\Fortinet\FortiClient\update_task.exe</Image>
         <Image condition="is">C:\Program Files (x86)\ossec-agent\wazuh-agent.exe</Image><!-- 9/5/2024 -->
         <Image condition="begin with">C:\Program Files (x86)\Kaspersky Lab\</Image>  <!---->
         <Image condition="contains all">C:\Program Files (x86)\Kaspersky Lab\;\avpsus.exe</Image>  <!---->
@@ -1435,6 +1444,7 @@
         <TargetFilename condition="end with">.TMP</TargetFilename> <!---->
         <TargetFilename condition="end with">.ldb</TargetFilename> <!---->
         <TargetFilename condition="end with">~tmp</TargetFilename> <!---->
+        <TargetFilename condition="end with">.etl</TargetFilename> <!---->
         <Rule groupRelation="and">
           <Image condition="image">Outlook.exe</Image>
           <TargetFilename condition="contains">Roaming\Microsoft\Outlook\Outlook.xml</TargetFilename>
