@@ -396,6 +396,7 @@
     <!-- Event ID 1 == Process Creation - Excludes -->
     <RuleGroup groupRelation="or">
       <ProcessCreate onmatch="exclude">
+        <Image condition="contains">\Windows\system32\msiexec.exe</Image>
         <Rule groupRelation="and">
           <Image condition="end with">AcroRd32.exe</Image>
           <CommandLine condition="contains any">/CR;channel=</CommandLine>
@@ -790,6 +791,7 @@
     <!-- Event ID 3 == Network Connection - Excludes -->
     <RuleGroup groupRelation="or">
       <NetworkConnect onmatch="exclude">
+        <Image condition="contains">\Windows\system32\msiexec.exe</Image>
         <Image condition="is">C:\Windows\System32\dns.exe</Image><!--3.5-->
         <Image condition="is">C:\Program Files (x86)\Fortinet\FSAE\collectoragent.exe</Image><!--280-->
         <Image condition="is">C:\Program Files (x86)\GFI\LanGuard 12 Agent\lnsscomm.exe</Image><!---->
@@ -1370,7 +1372,7 @@
         <Image condition="contains">\Windows\system32\msiexec.exe</Image>
         <Rule groupRelation="and">
           <Image condition="contains all">C:\Windows\Microsoft.NET\Framework64\;\ngen.exe</Image>
-          <TargetFilename condition="end with">.dat</TargetFilename><!-- -->2
+          <TargetFilename condition="end with">.dat</TargetFilename><!-- -->
         </Rule>
         <Rule groupRelation="and">
           <Image condition="contains all">C:\Windows\Microsoft.NET\Framework\;\NGenTask.exe</Image>
