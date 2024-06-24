@@ -648,6 +648,10 @@
 			<!--SECTION: Windows:Updates-->
 			<TargetFilename condition="begin with">C:\$WINDOWS.~BT\Sources\</TargetFilename> <!-- Windows: Feature updates containing lots of .exe and .sys-->
 			<Image condition="begin with">C:\Windows\winsxs\amd64_microsoft-windows</Image> <!-- Windows: Windows update-->
+			<Rule groupRelation="and">
+				<Image condition="contains all">C:\Windows\SystemApps\Microsoft.Windows.Search_cw5n1h2txyewy\SearchApp.exe</Image>
+				<TargetFilename condition="contains all">C:\Users\;\AppData\Local\Packages\Microsoft.Windows.Search_;\LocalState\ConstraintIndex\Apps_;\</TargetFilename>
+			</Rule>
 		</FileCreate>
 	</RuleGroup>
 
@@ -897,7 +901,7 @@
 			<TargetObject condition="end with">SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\Scripts\Shutdown\0\GPO-ID</TargetObject> <!--Windows:Group Policy: Noise below the actual key while building-->
 			<TargetObject condition="end with">SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\Scripts\Shutdown\0\0\IsPowershell</TargetObject> <!--Windows:Group Policy: Noise below the actual key while building-->
 			<TargetObject condition="end with">SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\Scripts\Shutdown\0\0\ExecTime</TargetObject> <!--Windows:Group Policy: Noise below the actual key while building-->
-			<TargetObject condition="contains">\safer\codeidentifiers\0\HASHES\{</TargetObject> <!--Windows: Software Restriction Policies. Can be used to disable security tools, but very noisy to monitor if you use it-->
+			<TargetObject condition="contains">\safer\codeidentifiers\0\HASHES\</TargetObject> <!--Windows: Software Restriction Policies. Can be used to disable security tools, but very noisy to monitor if you use it-->
 			<!--SECTION: Office C2R-->
 			<TargetObject condition="contains">VirtualStore\MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\</TargetObject> <!--Microsoft: SearchProtocolHost writes to OfficeC2R registry for Outlook, seemingly regarding mail indexing-->
 			<TargetObject condition="begin with">HKLM\SOFTWARE\Microsoft\Office\ClickToRun\</TargetObject> <!--Microsoft: Virtual registry for Office-->
