@@ -396,7 +396,10 @@
     <!-- Event ID 1 == Process Creation - Excludes -->
     <RuleGroup groupRelation="or">
       <ProcessCreate onmatch="exclude">
+        <ParentImage condition="contains">\Windows\system32\msiexec.exe</ParentImage>
+        <ParentImage condition="contains">\Windows\SysWOW64\msiexec.exe</ParentImage>
         <Image condition="contains">\Windows\system32\msiexec.exe</Image>
+        <Image condition="contains">\Windows\SysWOW64\msiexec.exe</Image>
         <Rule groupRelation="and">
           <Image condition="end with">AcroRd32.exe</Image>
           <CommandLine condition="contains any">/CR;channel=</CommandLine>
@@ -1015,6 +1018,8 @@
     <!-- Event ID 7 == Image Loaded - Excludes -->
     <RuleGroup groupRelation="or">
       <ImageLoad onmatch="exclude">
+        <Image condition="contains">\Windows\System32\msiexec.exe</Image>
+        <Image condition="contains">\Windows\SysWOW64\msiexec.exe</Image>
         <Rule groupRelation="and">
           <Image condition="is">C:\Program Files (x86)\Kaspersky Lab\NetworkAgent\vapm.exe</Image><!---->
           <OriginalFileName condition="is">taskschd.dll</OriginalFileName>
