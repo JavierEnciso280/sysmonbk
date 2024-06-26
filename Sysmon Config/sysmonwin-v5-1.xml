@@ -1492,7 +1492,9 @@
     <!-- Event ID 12,13,14 == RegObject added/deleted, RegValue Set, RegObject Renamed - Includes -->
     <RuleGroup name="" groupRelation="or">
 		<RegistryEvent onmatch="include">
-		<TargetObject name="T1562.002" condition="begin with">HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\</TargetObject>
+		  <TargetObject name="T1562.002" condition="begin with">HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\</TargetObject>
+		  <TargetObject name="T1562.002" condition="begin with">HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\</TargetObject>
+		  <TargetObject name="T1562.002" condition="contains">\Software\Microsoft\Windows\CurrentVersion\Uninstall\</TargetObject>
 		</RegistryEvent>
 	</RuleGroup>
     <!-- Event ID 15 == FileStream Created - Includes -->
