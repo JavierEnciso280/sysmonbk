@@ -1374,7 +1374,8 @@
     <!-- Event ID 11 == FileCreate - Excludes -->
     <RuleGroup groupRelation="or">
       <FileCreate onmatch="exclude">
-        <Image condition="contains">\Windows\system32\msiexec.exe</Image>
+        <Image condition="contains">\Windows\system32\msiexec.exe</Image><!---->
+        <Image condition="contains all">\Windows\SystemApps\Microsoft.Windows.Search;\SearchApp.exe</Image>
         <Rule groupRelation="and">
           <Image condition="contains all">C:\Windows\Microsoft.NET\Framework64\;\ngen.exe</Image>
           <TargetFilename condition="end with">.dat</TargetFilename><!-- -->
